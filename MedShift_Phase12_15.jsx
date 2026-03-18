@@ -276,31 +276,25 @@ const StatusBar = () => (
 );
 
 const TopHeader = ({ role, onBellClick, unreadCount }) => (
-  <div className="flex-none z-50 sticky top-0 flex items-center justify-between px-5 py-3 w-full"
-    style={{ backdropFilter:"blur(18px)", background:"rgba(255,255,255,0.88)",
-      borderBottom:"1px solid rgba(226,232,240,0.7)" }}>
-    <div className="flex items-center gap-2.5">
-      <div className="w-8 h-8 rounded-xl flex items-center justify-center"
+  <div className="flex-none z-50 sticky top-0 flex items-center justify-between px-3 py-2 w-full"
+    style={{ backdropFilter:"blur(12px)", background:"rgba(255,255,255,0.75)",
+      borderBottom:"1px solid rgba(226,232,240,0.5)" }}>
+    <div className="flex items-center gap-2">
+      <div className="w-6 h-6 rounded-lg flex items-center justify-center"
         style={{ background: C.blue }}>
-        <Activity size={15} color="white" strokeWidth={2.5}/>
+        <Activity size={12} color="white" strokeWidth={2.5}/>
       </div>
-      <span className="font-black text-base" style={{ color: C.blue, fontFamily: F.head }}>
+      <span className="font-black text-sm" style={{ color: C.blue, fontFamily: F.head }}>
         Med<span style={{ color: C.teal }}>Shift</span>
       </span>
     </div>
     <div className="flex items-center gap-2">
-      <span className="text-[11px] font-bold px-3 py-1 rounded-full"
-        style={{ background: role === "manager" ? `${C.blue}12` : `${C.teal}12`,
-          color: role === "manager" ? C.blue : C.teal }}>
-        {role === "manager" ? "Manager" : "Technician"}
-      </span>
-      <button onClick={onBellClick} className="relative w-10 h-10 rounded-2xl flex items-center justify-center"
-        style={{ background:"#F1F5F9" }}>
-        <Bell size={17} color={C.blue} strokeWidth={1.8}/>
+      <button onClick={onBellClick} className="relative w-8 h-8 rounded-xl flex items-center justify-center bg-slate-100">
+        <Bell size={14} color={C.blue} strokeWidth={1.8}/>
         {unreadCount > 0 && (
           <motion.span
             initial={{ scale:0 }} animate={{ scale:1 }}
-            className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black text-white"
+            className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full flex items-center justify-center text-[8px] font-black text-white"
             style={{ background: C.red }}>
             {unreadCount}
           </motion.span>
@@ -312,29 +306,28 @@ const TopHeader = ({ role, onBellClick, unreadCount }) => (
 
 const BottomNav = ({ active, setActive, role }) => {
   const tabs = [
-    { id:"home",      label: role==="manager" ? "Dashboard" : "Radar",  icon: Home      },
-    { id:"shifts",    label: "Shifts",                                   icon: Calendar  },
-    { id:"community", label: "Community",                                icon: Users     },
-    { id:"wallet",    label: role==="manager" ? "Finance" : "Wallet",   icon: Wallet    },
-    { id:"profile",   label: "Profile",                                  icon: User      },
+    { id:"home",      label: "Home",       icon: Home      },
+    { id:"shifts",    label: "Shifts",     icon: Calendar  },
+    { id:"community", label: "Community",  icon: Users     },
+    { id:"profile",   label: "Profile",    icon: User      },
   ];
   return (
-    <div className="flex-none z-50 sticky bottom-0 flex items-center justify-around px-1 pt-2 pb-4 w-full"
-      style={{ background:"rgba(255,255,255,0.96)", backdropFilter:"blur(20px)",
+    <div className="flex-none z-50 sticky bottom-0 flex items-center justify-around px-2 pt-1.5 pb-2 w-full"
+      style={{ background:"rgba(255,255,255,0.9)", backdropFilter:"blur(12px)",
         borderTop:"1px solid #E2E8F0" }}>
       {tabs.map(({ id, label, icon:Icon }) => {
         const on = active === id;
         return (
           <button key={id} onClick={() => setActive(id)}
-            className="flex flex-col items-center gap-0.5 relative py-1 px-2 min-w-[44px] min-h-[44px] justify-center">
+            className="flex flex-col items-center gap-0.5 relative py-1 px-2 min-w-[40px] min-h-[40px] justify-center">
             {on && (
               <motion.div layoutId="navPill"
-                className="absolute inset-0 rounded-2xl"
+                className="absolute inset-0 rounded-xl"
                 style={{ background:`${C.teal}12` }}
                 transition={{ type:"spring", stiffness:400, damping:30 }}/>
             )}
-            <Icon size={18} color={on ? C.teal : "#94A3B8"} strokeWidth={on ? 2.5 : 1.8}/>
-            <span className="text-[9px] font-bold relative z-10"
+            <Icon size={16} color={on ? C.teal : "#94A3B8"} strokeWidth={on ? 2 : 1.5}/>
+            <span className="text-[8px] font-bold relative z-10"
               style={{ color: on ? C.teal : "#94A3B8", fontFamily: F.head }}>
               {label}
             </span>
@@ -1471,45 +1464,23 @@ export default function MedShiftFull() {
   };
 
   return (
-    <div className="max-w-md mx-auto flex flex-col h-screen overflow-hidden bg-slate-50 relative shadow-2xl w-full"
+    <div className="flex flex-col h-[100dvh] overflow-hidden overscroll-y-contain max-w-[480px] mx-auto w-full relative bg-slate-50"
       style={{ fontFamily:F.head }}>
       <style>{FONTS}{`
         *{-webkit-tap-highlight-color:transparent;box-sizing:border-box;}
-        ::-webkit-scrollbar{display:none;}
-        main { scrollbar-width: none; -ms-overflow-style: none; }
-        main::-webkit-scrollbar { display: none; }
         body { background: #f8fafc; margin: 0; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <StatusBar/>
+      <TopHeader
+        role={role}
+        onBellClick={() => setNotifOpen(true)}
+        unreadCount={unread}
+      />
 
-        {/* Role switcher */}
-        <div className="flex items-center gap-2 px-5 py-2.5"
-          style={{ background:"#F1F5F9", borderBottom:"1px solid #E2E8F0" }}>
-          <span className="text-[11px] text-slate-400 font-bold flex-1"
-            style={{ fontFamily:F.mono }}>VIEW AS:</span>
-          {["technician","manager"].map(r => (
-            <button key={r}
-              onClick={() => { setRole(r); setActiveTab("home"); setUnread(3); }}
-              className="px-4 py-1.5 rounded-full text-xs font-black transition-all"
-              style={{
-                background: role===r ? (r==="manager" ? C.blue : C.teal) : "transparent",
-                color: role===r ? "white" : "#94A3B8",
-                fontFamily:F.head,
-              }}>
-              {r === "manager" ? "👔 Manager" : "🩺 Technician"}
-            </button>
-          ))}
-        </div>
-
-        <TopHeader
-          role={role}
-          onBellClick={() => setNotifOpen(true)}
-          unreadCount={unread}
-        />
-
-        {/* Main content area */}
-        <main className="flex-1 overflow-y-auto overscroll-y-contain pb-20 pt-4 px-4 w-full">
+      {/* Main content area */}
+      <main className="flex-1 overflow-y-auto pt-16 pb-20 overscroll-y-contain scrollbar-hide px-3 w-full">
           <AnimatePresence mode="wait">
             <motion.div key={activeTab + role}
               className="flex flex-col flex-1 w-full"
