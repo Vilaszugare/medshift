@@ -1457,8 +1457,24 @@ export default function MedShiftFull() {
       case "home":      return role === "manager" ? <ManagerDashboard/> : <TechRadar/>;
       case "shifts":    return <ShiftsTab role={role}/>;
       case "community": return <CommunityFeed/>;
-      case "wallet":    return role === "manager" ? <ManagerFinance/> : <TechWallet/>;
-      case "profile":   return role === "manager" ? <ManagerProfile/> : <TechProfile/>;
+      case "profile":
+        return role === "manager" ? (
+          <div className="flex flex-col gap-6">
+            <ManagerProfile/>
+            <div className="mx-1 mt-2 pt-6 border-t border-slate-200">
+              <h3 className="text-xs font-black mb-3 px-4 uppercase tracking-widest" style={{ fontFamily:F.head, color:"#0D9488" }}>Finance & Payments</h3>
+              <ManagerFinance/>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-6">
+            <TechProfile/>
+            <div className="mx-1 mt-2 pt-6 border-t border-slate-200">
+              <h3 className="text-xs font-black mb-3 px-4 uppercase tracking-widest" style={{ fontFamily:F.head, color:"#0D9488" }}>Wallet & Earnings</h3>
+              <TechWallet/>
+            </div>
+          </div>
+        );
       default:          return null;
     }
   };
