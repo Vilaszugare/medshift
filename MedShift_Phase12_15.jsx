@@ -494,7 +494,7 @@ const NotificationCenter = ({ open, onClose, notifications, onMarkAll }) => {
 // ═══════════════════════════════════════════════════════════════════════════════
 // PHASE 13 — MANAGER DASHBOARD
 // ═══════════════════════════════════════════════════════════════════════════════
-const ManagerDashboard = ({ shifts }) => {
+const ManagerDashboard = ({ shifts, onCreateShift }) => {
   const [boosted, setBoosted] = useState(false);
 
   return (
@@ -532,7 +532,7 @@ const ManagerDashboard = ({ shifts }) => {
           <h2 className="font-black text-base" style={{ color:C.blue, fontFamily:F.head }}>
             Active Shifts
           </h2>
-          <button className="text-xs font-bold px-3 py-1.5 rounded-xl"
+          <button onClick={onCreateShift} className="text-xs font-bold px-3 py-1.5 rounded-xl"
             style={{ background:`${C.teal}10`, color:C.teal }}>
             + New Post
           </button>
@@ -634,11 +634,11 @@ const ManagerDashboard = ({ shifts }) => {
         <div className="grid grid-cols-2 gap-3">
           {[
             { label:"Browse Techs",   icon:Search,      color:C.teal  },
-            { label:"Post Shift",     icon:Megaphone,   color:C.blue  },
+            { label:"Post Shift",     icon:Megaphone,   color:C.blue, onClick: onCreateShift  },
             { label:"View Invoices",  icon:CreditCard,  color:"#8B5CF6" },
             { label:"Analytics",      icon:BarChart3,   color:C.amber },
-          ].map(({ label, icon:Icon, color }) => (
-            <button key={label}
+          ].map(({ label, icon:Icon, color, onClick }) => (
+            <button key={label} onClick={onClick}
               className="flex items-center gap-3 p-3.5 rounded-2xl"
               style={{ background:C.card, border:"1px solid #F1F5F9" }}>
               <div className="w-9 h-9 rounded-xl flex items-center justify-center"
@@ -1796,7 +1796,7 @@ export default function MedShiftFull() {
 
   const renderTab = () => {
     switch (activeTab) {
-      case "home":      return role === "manager" ? <ManagerDashboard shifts={managerShifts}/> : <TechRadar shifts={techShifts}/>;
+      case "home":      return role === "manager" ? <ManagerDashboard shifts={managerShifts} onCreateShift={() => setCreateShiftOpen(true)}/> : <TechRadar shifts={techShifts}/>;
       case "shifts":    return <ShiftsTab role={role} managerShifts={managerShifts} techShifts={techShifts}/>;
       case "community": return <CommunityFeed posts={posts}/>;
       case "profile":
