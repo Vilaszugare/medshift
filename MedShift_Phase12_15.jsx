@@ -494,7 +494,7 @@ const NotificationCenter = ({ open, onClose, notifications, onMarkAll }) => {
 // ═══════════════════════════════════════════════════════════════════════════════
 // PHASE 13 — MANAGER DASHBOARD
 // ═══════════════════════════════════════════════════════════════════════════════
-const ManagerDashboard = () => {
+const ManagerDashboard = ({ shifts }) => {
   const [boosted, setBoosted] = useState(false);
 
   return (
@@ -538,7 +538,7 @@ const ManagerDashboard = () => {
           </button>
         </div>
 
-        {MANAGER_SHIFTS.map((s, i) => {
+        {shifts.map((s, i) => {
           const Icon = s.icon;
           return (
             <motion.div key={s.id}
@@ -657,7 +657,7 @@ const ManagerDashboard = () => {
 // ═══════════════════════════════════════════════════════════════════════════════
 // PHASE 14 — TECHNICIAN JOB RADAR
 // ═══════════════════════════════════════════════════════════════════════════════
-const TechRadar = () => {
+const TechRadar = ({ shifts }) => {
   const [accepted, setAccepted] = useState({});
   const [available, setAvailable] = useState(true);
 
@@ -731,7 +731,7 @@ const TechRadar = () => {
             Nearby Shifts
             <span className="ml-2 text-xs font-bold px-2 py-0.5 rounded-full"
               style={{ background:`${C.teal}12`, color:C.teal }}>
-              {TECH_SHIFTS.length}
+              {shifts.length}
             </span>
           </h2>
           <button className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl"
@@ -740,7 +740,7 @@ const TechRadar = () => {
           </button>
         </div>
 
-        {TECH_SHIFTS.map((s, i) => (
+        {shifts.map((s, i) => (
           <motion.div key={s.id}
             initial={{ opacity:0, y:18 }} animate={{ opacity:1, y:0 }}
             transition={{ delay: i*0.1 }}
@@ -1311,8 +1311,8 @@ const CommunityFeed = ({ posts }) => (
 // ═══════════════════════════════════════════════════════════════════════════════
 // SHIFTS TAB (shared)
 // ═══════════════════════════════════════════════════════════════════════════════
-const ShiftsTab = ({ role }) => {
-  const shifts = role === "manager" ? MANAGER_SHIFTS : TECH_SHIFTS;
+const ShiftsTab = ({ role, managerShifts, techShifts }) => {
+  const shifts = role === "manager" ? managerShifts : techShifts;
   return (
     <div className="flex-1 overflow-y-auto pb-28 px-5 pt-5" style={{ scrollbarWidth:"none" }}>
       <h1 className="font-black text-2xl mb-1" style={{ color:C.blue, fontFamily:F.head }}>
@@ -1443,6 +1443,176 @@ const DemoLoginScreen = ({ onLogin }) => (
 );
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// CREATE MENU BOTTOM SHEET (Dual-Action)
+// ═══════════════════════════════════════════════════════════════════════════════
+const CreateMenuSheet = ({ open, onClose, onSelectCommunity, onSelectShift }) => (
+  <AnimatePresence>
+    {open && (
+      <>
+        <motion.div
+          className="absolute inset-0 z-[60] bg-black/40 backdrop-blur-sm"
+          initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
+          onClick={onClose}/>
+
+        <motion.div
+          className="absolute bottom-0 left-0 right-0 z-[70] flex flex-col rounded-t-3xl overflow-hidden shadow-2xl p-6"
+          style={{ background: C.card }}
+          initial={{ y:"100%" }} animate={{ y:0 }} exit={{ y:"100%" }}
+          transition={{ type:"spring", stiffness:340, damping:38 }}
+        >
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="font-black text-xl" style={{ color:C.blue, fontFamily:F.head }}>
+              Create New...
+            </h2>
+            <button onClick={onClose}
+              className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-100 transition-colors hover:bg-slate-200">
+              <X size={16} color={C.blue}/>
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-4 mb-4">
+            <motion.button 
+              whileTap={{ scale: 0.96 }}
+              onClick={() => { onClose(); onSelectShift(); }}
+              className="w-full rounded-[1.25rem] p-5 text-left relative overflow-hidden border border-amber-100"
+              style={{ background: `linear-gradient(135deg, ${C.amber}, #D97706)`, boxShadow: `0 12px 24px ${C.amber}40` }}>
+              <div className="absolute right-0 top-0 bottom-0 w-24 opacity-10 bg-gradient-to-l from-white to-transparent pointer-events-none"/>
+              <div className="flex items-center justify-between mb-2">
+                <span className="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider rounded-md text-amber-600 bg-white/90 shadow-sm" style={{ fontFamily: F.mono }}>
+                  Instant Hire
+                </span>
+                <ArrowUpRight size={18} color="rgba(255,255,255,0.6)" />
+              </div>
+              <h3 className="text-white text-xl font-black tracking-tight" style={{ fontFamily: F.head }}>
+                Post a Shift
+              </h3>
+              <p className="text-white/80 text-xs mt-1">Hire a technician immediately</p>
+            </motion.button>
+
+            <motion.button 
+              whileTap={{ scale: 0.96 }}
+              onClick={() => { onClose(); onSelectCommunity(); }}
+              className="w-full rounded-[1.25rem] p-5 text-left relative overflow-hidden border border-teal-100"
+              style={{ background: `linear-gradient(135deg, ${C.teal}, #0F766E)`, boxShadow: `0 12px 24px ${C.teal}30` }}>
+              <div className="absolute right-0 top-0 bottom-0 w-24 opacity-10 bg-gradient-to-l from-white to-transparent pointer-events-none"/>
+              <div className="flex justify-end mb-2">
+                <ArrowUpRight size={18} color="rgba(255,255,255,0.6)" />
+              </div>
+              <h3 className="text-white text-xl font-black tracking-tight -mt-4 lg:mt-0" style={{ fontFamily: F.head }}>
+                Community Post
+              </h3>
+              <p className="text-white/80 text-xs mt-1">Share news, updates, or articles</p>
+            </motion.button>
+          </div>
+        </motion.div>
+      </>
+    )}
+  </AnimatePresence>
+);
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CREATE SHIFT BOTTOM SHEET
+// ═══════════════════════════════════════════════════════════════════════════════
+const CreateShiftSheet = ({ open, onClose, onSubmit }) => {
+  const [title, setTitle] = useState("");
+  const [pay, setPay] = useState("₹800/hr");
+  const [urgent, setUrgent] = useState(true);
+
+  const handleSubmit = () => {
+    if (title.trim()) {
+      onSubmit({ title, pay, urgent });
+      setTitle("");
+      setPay("₹800/hr");
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <>
+          <motion.div
+            className="absolute inset-0 z-[60] bg-black/40 backdrop-blur-sm"
+            initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
+            onClick={onClose}/>
+
+          <motion.div
+            className="absolute bottom-0 left-0 right-0 z-[70] flex flex-col rounded-t-3xl overflow-hidden shadow-2xl"
+            style={{ background: C.card, height: "75vh" }}
+            initial={{ y:"100%" }} animate={{ y:0 }} exit={{ y:"100%" }}
+            transition={{ type:"spring", stiffness:340, damping:38 }}
+          >
+            <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom:"1px solid #F1F5F9" }}>
+              <h2 className="font-black text-lg" style={{ color:C.blue, fontFamily:F.head }}>
+                Post a Shift
+              </h2>
+              <button onClick={onClose}
+                className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-100 transition-colors hover:bg-slate-200">
+                <X size={16} color={C.blue}/>
+              </button>
+            </div>
+
+            <div className="flex-1 p-5 flex flex-col gap-4 overflow-y-auto" style={{ scrollbarWidth: "none" }}>
+              <div>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block" style={{ fontFamily:F.mono }}>Equipment / Role Required</label>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="e.g. Urgent X-Ray Technician"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none text-sm font-semibold text-slate-800 focus:border-teal-500 focus:bg-white transition-colors"
+                  style={{ fontFamily:F.head }}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block" style={{ fontFamily:F.mono }}>Date & Time</label>
+                  <div className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800">
+                    Today, 4:00 PM
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block" style={{ fontFamily:F.mono }}>Pay Rate</label>
+                  <input
+                    type="text"
+                    value={pay}
+                    onChange={(e) => setPay(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none text-sm font-semibold text-slate-800 focus:border-teal-500 focus:bg-white transition-colors text-teal-600"
+                    style={{ fontFamily:F.head }}
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-4 rounded-xl border border-amber-200 bg-amber-50 mt-2">
+                <div>
+                  <p className="font-bold text-sm text-amber-900 mb-0.5">High Urgency</p>
+                  <p className="text-xs text-amber-700">Notifies all available technicians instantly</p>
+                </div>
+                <button onClick={() => setUrgent(!urgent)} className="w-12 h-6 rounded-full px-1 flex items-center transition-all bg-amber-400">
+                  <motion.div className="w-4 h-4 rounded-full bg-white shadow-sm"
+                    animate={{ x: urgent ? 24 : 0 }}
+                    transition={{ type:"spring", stiffness:500, damping:30 }}/>
+                </button>
+              </div>
+            </div>
+
+            <div className="p-5" style={{ borderTop:"1px solid #F1F5F9" }}>
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={handleSubmit}
+                className="w-full py-3.5 rounded-2xl font-black text-sm text-white shadow-lg flex items-center justify-center gap-2"
+                style={{ background: C.teal, boxShadow: `0 4px 14px ${C.teal}40`, opacity: title.trim() ? 1 : 0.6 }}>
+                <Zap size={16} fill="white"/> Post Urgent Shift
+              </motion.button>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // CREATE POST BOTTOM SHEET
 // ═══════════════════════════════════════════════════════════════════════════════
 const CreatePostSheet = ({ open, onClose, onSubmit }) => {
@@ -1535,7 +1705,11 @@ export default function MedShiftFull() {
   
   // Phase 6 addition
   const [posts, setPosts] = useState(FEED_POSTS);
+  const [managerShifts, setManagerShifts] = useState(MANAGER_SHIFTS);
+  const [techShifts, setTechShifts] = useState(TECH_SHIFTS);
+  const [createMenuOpen, setCreateMenuOpen] = useState(false);
   const [createPostOpen, setCreatePostOpen] = useState(false);
+  const [createShiftOpen, setCreateShiftOpen] = useState(false);
 
   const handleCreatePost = (text) => {
     const newPost = {
@@ -1557,6 +1731,45 @@ export default function MedShiftFull() {
     setPosts([newPost, ...posts]);
     setCreatePostOpen(false);
     setActiveTab("community");
+  };
+
+  const handleCreateShift = ({ title, pay, urgent }) => {
+    const newShiftId = "s_" + Date.now();
+    
+    // Add to Manager Shifts
+    const newManagerShift = {
+      id: newShiftId,
+      title: title,
+      time: "Today, Just Now",
+      pay: pay,
+      status: "searching",
+      statusLabel: "Searching…",
+      color: C.amber,
+      icon: ScanLine,
+      dept: "Emergency Radiology",
+      duration: "4 hrs",
+      totalEst: "₹3,200",
+    };
+    setManagerShifts([newManagerShift, ...managerShifts]);
+
+    // Add to Tech Shifts
+    const newTechShift = {
+      id: newShiftId,
+      hospital: MANAGER.hospital,
+      distance: "2.5 km",
+      equipment: title,
+      pay: pay,
+      time: "Today, Just Now",
+      urgent: urgent,
+      dept: "Emergency Radiology",
+      duration: "4 hrs",
+      totalEst: "₹3,200",
+      color: C.amber,
+    };
+    setTechShifts([newTechShift, ...techShifts]);
+
+    setCreateShiftOpen(false);
+    setActiveTab("home");
   };
 
   const notifications = role === "manager" ? MANAGER_NOTIFICATIONS : TECH_NOTIFICATIONS;
@@ -1583,8 +1796,8 @@ export default function MedShiftFull() {
 
   const renderTab = () => {
     switch (activeTab) {
-      case "home":      return role === "manager" ? <ManagerDashboard/> : <TechRadar/>;
-      case "shifts":    return <ShiftsTab role={role}/>;
+      case "home":      return role === "manager" ? <ManagerDashboard shifts={managerShifts}/> : <TechRadar shifts={techShifts}/>;
+      case "shifts":    return <ShiftsTab role={role} managerShifts={managerShifts} techShifts={techShifts}/>;
       case "community": return <CommunityFeed posts={posts}/>;
       case "profile":
         return role === "manager" ? (
@@ -1638,7 +1851,7 @@ export default function MedShiftFull() {
           </AnimatePresence>
         </main>
 
-        <BottomNav active={activeTab} setActive={setActiveTab} role={role} onAddClick={() => setCreatePostOpen(true)}/>
+        <BottomNav active={activeTab} setActive={setActiveTab} role={role} onAddClick={() => role === "manager" ? setCreateMenuOpen(true) : setCreatePostOpen(true)}/>
 
         {/* Notification Panel — Phase 12 */}
         <NotificationCenter
@@ -1646,6 +1859,21 @@ export default function MedShiftFull() {
           onClose={() => setNotifOpen(false)}
           notifications={notifications}
           onMarkAll={() => setUnread(0)}
+        />
+
+        {/* Create Menu Sheet (Manager Dual Option) */}
+        <CreateMenuSheet
+          open={createMenuOpen}
+          onClose={() => setCreateMenuOpen(false)}
+          onSelectCommunity={() => setCreatePostOpen(true)}
+          onSelectShift={() => setCreateShiftOpen(true)}
+        />
+
+        {/* Create Shift Sheet */}
+        <CreateShiftSheet
+          open={createShiftOpen}
+          onClose={() => setCreateShiftOpen(false)}
+          onSubmit={handleCreateShift}
         />
 
         {/* Create Post Sheet — Phase 6 */}
