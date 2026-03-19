@@ -10,7 +10,7 @@ import {
   Building2, Stethoscope, ScanLine, ThumbsUp, Send,
   BarChart3, Phone, ExternalLink, Sparkles, DollarSign,
   ArrowUpRight, ArrowDownLeft, RefreshCw, Eye, Hash,
-  ChevronDown, Search, Timer, Cpu
+  ChevronDown, Search, Timer, Cpu, Plus, Image as ImageIcon
 } from "lucide-react";
 
 // ─── PALETTE ─────────────────────────────────────────────────────────────────
@@ -304,36 +304,58 @@ const TopHeader = ({ role, onBellClick, unreadCount }) => (
   </div>
 );
 
-const BottomNav = ({ active, setActive, role }) => {
-  const tabs = [
+const BottomNav = ({ active, setActive, role, onAddClick }) => {
+  const tabsLeft = [
     { id:"home",      label: "Home",       icon: Home      },
     { id:"shifts",    label: "Shifts",     icon: Calendar  },
+  ];
+  const tabsRight = [
     { id:"community", label: "Community",  icon: Users     },
     { id:"profile",   label: "Profile",    icon: User      },
   ];
+
+  const renderTab = ({ id, label, icon:Icon }) => {
+    const on = active === id;
+    return (
+      <button key={id} onClick={() => setActive(id)}
+        className="flex flex-col items-center gap-0.5 relative py-1 px-2 min-w-[40px] min-h-[40px] justify-center flex-1">
+        {on && (
+          <motion.div layoutId="navPill"
+            className="absolute inset-0 rounded-xl"
+            style={{ background:`${C.teal}12` }}
+            transition={{ type:"spring", stiffness:400, damping:30 }}/>
+        )}
+        <Icon size={16} color={on ? C.teal : "#94A3B8"} strokeWidth={on ? 2 : 1.5}/>
+        <span className="text-[8px] font-bold relative z-10 mt-0.5"
+          style={{ color: on ? C.teal : "#94A3B8", fontFamily: F.head }}>
+          {label}
+        </span>
+      </button>
+    );
+  };
+
   return (
-    <div className="flex-none z-50 sticky bottom-0 flex items-center justify-around px-2 pt-1.5 pb-2 w-full"
-      style={{ background:"rgba(255,255,255,0.9)", backdropFilter:"blur(12px)",
-        borderTop:"1px solid #E2E8F0" }}>
-      {tabs.map(({ id, label, icon:Icon }) => {
-        const on = active === id;
-        return (
-          <button key={id} onClick={() => setActive(id)}
-            className="flex flex-col items-center gap-0.5 relative py-1 px-2 min-w-[40px] min-h-[40px] justify-center">
-            {on && (
-              <motion.div layoutId="navPill"
-                className="absolute inset-0 rounded-xl"
-                style={{ background:`${C.teal}12` }}
-                transition={{ type:"spring", stiffness:400, damping:30 }}/>
-            )}
-            <Icon size={16} color={on ? C.teal : "#94A3B8"} strokeWidth={on ? 2 : 1.5}/>
-            <span className="text-[8px] font-bold relative z-10"
-              style={{ color: on ? C.teal : "#94A3B8", fontFamily: F.head }}>
-              {label}
-            </span>
-          </button>
-        );
-      })}
+    <div className="flex-none z-50 sticky bottom-0 w-full pointer-events-none pb-0 pt-4">
+      <div className="mx-4 mb-4 rounded-2xl shadow-lg bg-white/90 backdrop-blur-md pointer-events-auto flex items-center justify-between px-2 py-1.5"
+        style={{ border:"1px solid rgba(226,232,240,0.8)" }}>
+        
+        {tabsLeft.map(renderTab)}
+
+        <div className="flex-1 flex justify-center -mt-8 pointer-events-auto relative z-20">
+          <motion.button 
+            whileTap={{ scale: 0.9 }}
+            onClick={onAddClick}
+            className="w-14 h-14 rounded-full flex items-center justify-center text-white shadow-teal-500/50"
+            style={{ 
+              background: C.teal,
+              boxShadow: `0 8px 20px ${C.teal}70`
+            }}>
+            <Plus size={26} strokeWidth={2.5}/>
+          </motion.button>
+        </div>
+
+        {tabsRight.map(renderTab)}
+      </div>
     </div>
   );
 };
@@ -1245,7 +1267,7 @@ const FeedPost = ({ post }) => {
   );
 };
 
-const CommunityFeed = () => (
+const CommunityFeed = ({ posts }) => (
   <div className="flex-1 overflow-y-auto pb-28 px-4 pt-4" style={{ scrollbarWidth:"none" }}>
     {/* Search */}
     <div className="flex items-center gap-2 mb-4">
@@ -1275,7 +1297,7 @@ const CommunityFeed = () => (
     </div>
 
     {/* Posts */}
-    {FEED_POSTS.map((post, i) => (
+    {posts.map((post, i) => (
       <motion.div key={post.id}
         initial={{ opacity:0, y:24 }}
         animate={{ opacity:1, y:0 }}
@@ -1421,6 +1443,87 @@ const DemoLoginScreen = ({ onLogin }) => (
 );
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// CREATE POST BOTTOM SHEET
+// ═══════════════════════════════════════════════════════════════════════════════
+const CreatePostSheet = ({ open, onClose, onSubmit }) => {
+  const [text, setText] = useState("");
+
+  const handleSubmit = () => {
+    if (text.trim()) {
+      onSubmit(text);
+      setText("");
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <>
+          <motion.div
+            className="absolute inset-0 z-[60] bg-black/40 backdrop-blur-sm"
+            initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
+            onClick={onClose}/>
+
+          <motion.div
+            className="absolute bottom-0 left-0 right-0 z-[70] flex flex-col rounded-t-3xl overflow-hidden shadow-2xl"
+            style={{ background: C.card, height: "70vh" }}
+            initial={{ y:"100%" }} animate={{ y:0 }} exit={{ y:"100%" }}
+            transition={{ type:"spring", stiffness:340, damping:38 }}
+          >
+            <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom:"1px solid #F1F5F9" }}>
+              <h2 className="font-black text-lg" style={{ color:C.blue, fontFamily:F.head }}>
+                Create New Post
+              </h2>
+              <button onClick={onClose}
+                className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-100 transition-colors hover:bg-slate-200">
+                <X size={16} color={C.blue}/>
+              </button>
+            </div>
+
+            <div className="flex-1 p-5 flex flex-col">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-10 h-10 rounded-2xl flex items-center justify-center font-black text-white text-sm"
+                  style={{ background:`linear-gradient(135deg, ${C.blue}, #0F2744)` }}>
+                  {MANAGER.initials}
+                </div>
+                <div>
+                  <p className="font-bold text-sm leading-tight" style={{ color:C.blue, fontFamily:F.head }}>
+                    {MANAGER.name}
+                  </p>
+                  <p className="text-xs text-slate-400 mt-0.5">{MANAGER.role}</p>
+                </div>
+              </div>
+              <textarea
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder="Share a medical update, urgent need, or news..."
+                className="w-full flex-1 resize-none outline-none text-base text-slate-700 placeholder:text-slate-300 bg-transparent"
+                style={{ fontFamily:F.head }}
+                autoFocus
+              />
+            </div>
+
+            <div className="flex items-center justify-between px-5 py-4" style={{ borderTop:"1px solid #F1F5F9" }}>
+              <button className="w-12 h-12 rounded-2xl flex items-center justify-center transition-colors hover:bg-teal-100/50"
+                style={{ background: `${C.teal}12` }}>
+                <ImageIcon size={20} color={C.teal} />
+              </button>
+              <motion.button
+                whileTap={{ scale: 0.95 }}
+                onClick={handleSubmit}
+                className="px-6 py-3.5 rounded-2xl font-black text-sm text-white shadow-lg"
+                style={{ background: C.teal, boxShadow: `0 4px 14px ${C.teal}40`, opacity: text.trim() ? 1 : 0.6 }}>
+                Post to Community
+              </motion.button>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // ROOT APP
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function MedShiftFull() {
@@ -1429,6 +1532,32 @@ export default function MedShiftFull() {
   const [activeTab,  setActiveTab]  = useState("home");
   const [notifOpen,  setNotifOpen]  = useState(false);
   const [unread,     setUnread]     = useState(3);
+  
+  // Phase 6 addition
+  const [posts, setPosts] = useState(FEED_POSTS);
+  const [createPostOpen, setCreatePostOpen] = useState(false);
+
+  const handleCreatePost = (text) => {
+    const newPost = {
+      id: "p_" + Date.now(),
+      type: "post",
+      author: MANAGER.name,
+      initials: MANAGER.initials,
+      role: MANAGER.role,
+      avatarColor: C.blue,
+      time: "Just now",
+      verified: MANAGER.verified,
+      body: text,
+      hasImage: false,
+      likes: 0,
+      comments: 0,
+      shares: 0,
+      liked: false,
+    };
+    setPosts([newPost, ...posts]);
+    setCreatePostOpen(false);
+    setActiveTab("community");
+  };
 
   const notifications = role === "manager" ? MANAGER_NOTIFICATIONS : TECH_NOTIFICATIONS;
 
@@ -1456,7 +1585,7 @@ export default function MedShiftFull() {
     switch (activeTab) {
       case "home":      return role === "manager" ? <ManagerDashboard/> : <TechRadar/>;
       case "shifts":    return <ShiftsTab role={role}/>;
-      case "community": return <CommunityFeed/>;
+      case "community": return <CommunityFeed posts={posts}/>;
       case "profile":
         return role === "manager" ? (
           <div className="flex flex-col gap-6">
@@ -1509,7 +1638,7 @@ export default function MedShiftFull() {
           </AnimatePresence>
         </main>
 
-        <BottomNav active={activeTab} setActive={setActiveTab} role={role}/>
+        <BottomNav active={activeTab} setActive={setActiveTab} role={role} onAddClick={() => setCreatePostOpen(true)}/>
 
         {/* Notification Panel — Phase 12 */}
         <NotificationCenter
@@ -1517,6 +1646,13 @@ export default function MedShiftFull() {
           onClose={() => setNotifOpen(false)}
           notifications={notifications}
           onMarkAll={() => setUnread(0)}
+        />
+
+        {/* Create Post Sheet — Phase 6 */}
+        <CreatePostSheet
+          open={createPostOpen}
+          onClose={() => setCreatePostOpen(false)}
+          onSubmit={handleCreatePost}
         />
     </div>
   );
