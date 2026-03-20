@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { App as CapacitorApp } from '@capacitor/app';
 import {
   Bell, Home, Calendar, Users, User, ArrowLeft, CheckCircle,
   MapPin, Clock, Star, Shield, Zap, Activity, ChevronRight,
@@ -10,18 +11,19 @@ import {
   Building2, Stethoscope, ScanLine, ThumbsUp, Send,
   BarChart3, Phone, ExternalLink, Sparkles, DollarSign,
   ArrowUpRight, ArrowDownLeft, RefreshCw, Eye, Hash,
-  ChevronDown, Search, Timer, Cpu, Plus, Image as ImageIcon
+  ChevronDown, Search, Timer, Cpu, Plus, Image as ImageIcon,
+  Moon, Sun
 } from "lucide-react";
 
 // ─── PALETTE ─────────────────────────────────────────────────────────────────
 const C = {
-  blue:   "#1A365D",
-  teal:   "#0D9488",
-  amber:  "#F59E0B",
-  pearl:  "#F8FAFC",
-  card:   "#FFFFFF",
-  green:  "#10B981",
-  red:    "#EF4444",
+  blue:   "var(--c-blue)",
+  teal:   "var(--c-teal)",
+  amber:  "var(--c-amber)",
+  pearl:  "var(--c-pearl)",
+  card:   "var(--c-card)",
+  green:  "var(--c-green)",
+  red:    "var(--c-red)",
 };
 
 // ─── FONTS ────────────────────────────────────────────────────────────────────
@@ -275,10 +277,10 @@ const StatusBar = () => (
   </div>
 );
 
-const TopHeader = ({ role, onBellClick, unreadCount }) => (
+const TopHeader = ({ role, onBellClick, unreadCount, isDark, toggleDark }) => (
   <div className="flex-none z-50 sticky top-0 flex items-center justify-between px-3 py-2 w-full"
-    style={{ backdropFilter:"blur(12px)", background:"rgba(255,255,255,0.75)",
-      borderBottom:"1px solid rgba(226,232,240,0.5)" }}>
+    style={{ backdropFilter:"blur(12px)", background:"var(--c-nav-bg)",
+      borderBottom:"1px solid var(--c-border)" }}>
     <div className="flex items-center gap-2">
       <div className="w-6 h-6 rounded-lg flex items-center justify-center"
         style={{ background: C.blue }}>
@@ -289,7 +291,10 @@ const TopHeader = ({ role, onBellClick, unreadCount }) => (
       </span>
     </div>
     <div className="flex items-center gap-2">
-      <button onClick={onBellClick} className="relative w-8 h-8 rounded-xl flex items-center justify-center bg-slate-100">
+      <button onClick={toggleDark} className="relative w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "var(--c-slate-100)" }}>
+        {isDark ? <Sun size={14} color={C.blue} strokeWidth={1.8}/> : <Moon size={14} color={C.blue} strokeWidth={1.8}/>}
+      </button>
+      <button onClick={onBellClick} className="relative w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "var(--c-slate-100)" }}>
         <Bell size={14} color={C.blue} strokeWidth={1.8}/>
         {unreadCount > 0 && (
           <motion.span
@@ -1698,6 +1703,16 @@ const CreatePostSheet = ({ open, onClose, onSubmit }) => {
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function MedShiftFull() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isDark, setIsDark] = useState(false);
+  
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDark]);
+
   const [role,       setRole]       = useState("technician");
   const [activeTab,  setActiveTab]  = useState("home");
   const [notifOpen,  setNotifOpen]  = useState(false);
@@ -1710,6 +1725,30 @@ export default function MedShiftFull() {
   const [createMenuOpen, setCreateMenuOpen] = useState(false);
   const [createPostOpen, setCreatePostOpen] = useState(false);
   const [createShiftOpen, setCreateShiftOpen] = useState(false);
+
+  // Phase 2 Hardware Back Button
+  useEffect(() => {
+    const handleBackButton = () => {
+      if (createPostOpen) {
+        setCreatePostOpen(false);
+      } else if (createShiftOpen) {
+        setCreateShiftOpen(false);
+      } else if (createMenuOpen) {
+        setCreateMenuOpen(false);
+      } else if (notifOpen) {
+        setNotifOpen(false);
+      } else if (activeTab !== "home") {
+        setActiveTab("home");
+      } else {
+        CapacitorApp.exitApp();
+      }
+    };
+    
+    CapacitorApp.addListener('backButton', handleBackButton);
+    return () => {
+      CapacitorApp.removeAllListeners();
+    };
+  }, [createPostOpen, createShiftOpen, createMenuOpen, notifOpen, activeTab]);
 
   const handleCreatePost = (text) => {
     const newPost = {
@@ -1822,11 +1861,11 @@ export default function MedShiftFull() {
   };
 
   return (
-    <div className="flex flex-col h-[100dvh] overflow-hidden overscroll-y-contain max-w-[480px] mx-auto w-full relative bg-slate-50"
-      style={{ fontFamily:F.head }}>
+    <div className="flex flex-col h-[100dvh] overflow-hidden overscroll-y-contain max-w-[480px] mx-auto w-full relative"
+      style={{ fontFamily:F.head, background: "var(--c-pearl)", color: "var(--c-text-main)" }}>
       <style>{FONTS}{`
         *{-webkit-tap-highlight-color:transparent;box-sizing:border-box;}
-        body { background: #f8fafc; margin: 0; }
+        body { background: var(--c-pearl); color: var(--c-text-main); margin: 0; }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
@@ -1835,6 +1874,8 @@ export default function MedShiftFull() {
         role={role}
         onBellClick={() => setNotifOpen(true)}
         unreadCount={unread}
+        isDark={isDark}
+        toggleDark={() => setIsDark(!isDark)}
       />
 
       {/* Main content area */}

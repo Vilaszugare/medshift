@@ -4,9 +4,10 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: './', // <--- THIS IS THE MAGIC LINE FOR ANDROID
   server: {
     host: true,
-    allowedHosts: ['thakare.duckdns.org', 'lics-fry.loca.lt']
+    allowedHosts: ['https://medmis.vercel.app/', 'lics-fry.loca.lt']
   },
   plugins: [
     react(),
