@@ -1,13 +1,12 @@
 import sys
 from sqlalchemy.orm import Session
-from passlib.context import CryptContext
+import bcrypt
 from database import SessionLocal, engine, Base
 from models import Hospital, ManagerProfile
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
 
 def seed_managers():
     db: Session = SessionLocal()

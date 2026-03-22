@@ -5,16 +5,18 @@ from models import TechnicianProfile, ManagerProfile
 from schemas import TechnicianRegisterRequest, LoginRequest
 import hashlib
 import uuid
-from passlib.context import CryptContext
+import bcrypt
 from fastapi import APIRouter
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 def verify_password(plain_password, hashed_password):
     if len(hashed_password) == 64: # SHA256 for older mock accounts
         return hashlib.sha256(plain_password.encode()).hexdigest() == hashed_password
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
+    except ValueError:
+        return False
 
 def get_password_hash(password: str) -> str:
     # Hash for demo purposes (newly created technicians keep this fallback or we upgrade them too)

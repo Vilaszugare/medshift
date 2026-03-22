@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import PullToRefresh from 'react-simple-pull-to-refresh';
 import { HospitalProfile, TechnicianProfile, CallingScreen } from './MedShift_Phase10_11.jsx';
 import { App as CapacitorApp } from '@capacitor/app';
 import {
@@ -178,7 +179,7 @@ const TopHeader = ({ role, onBellClick, unreadCount, isDark, toggleDark }) => (
         <Activity size={12} color="white" strokeWidth={2.5}/>
       </div>
       <span className="font-black text-sm" style={{ color: C.blue, fontFamily: F.head }}>
-        Med<span style={{ color: C.teal }}>Shift</span>
+        Quick<span style={{ color: C.teal }}>Med</span> Support
       </span>
     </div>
     <div className="flex items-center gap-2">
@@ -231,7 +232,7 @@ const BottomNav = ({ active, setActive, role, onAddClick, isGuest, onRequireAuth
   };
 
   return (
-    <div className="flex-none z-50 sticky bottom-0 w-full pointer-events-none pb-0 pt-4">
+    <div className="absolute bottom-0 left-0 right-0 w-full z-50 pointer-events-none pb-0 pt-4">
       <div className="mx-4 mb-4 rounded-2xl shadow-lg bg-white/90 backdrop-blur-md pointer-events-auto flex items-center justify-between px-2 py-1.5"
         style={{ border:"1px solid rgba(226,232,240,0.8)" }}>
         
@@ -468,7 +469,7 @@ const ManagerDashboard = ({ shifts, onCreateShift, onViewProfileClick, onComplet
   const [boosted, setBoosted] = useState(false);
 
   return (
-    <div className="flex-1 overflow-y-auto pb-28" style={{ scrollbarWidth:"none" }}>
+    <div className="flex-1 overflow-y-auto pb-28 bg-transparent" style={{ scrollbarWidth:"none" }}>
       {/* Greeting Hero */}
       <div className="px-5 pt-5 pb-4">
         <p className="text-xs text-slate-400 mb-0.5" style={{ fontFamily:F.mono }}>
@@ -620,7 +621,7 @@ const ManagerDashboard = ({ shifts, onCreateShift, onViewProfileClick, onComplet
 
       {/* Quick actions */}
       <div className="px-5 mb-4">
-        <h2 className="font-black text-base mb-3" style={{ color:C.blue, fontFamily:F.head }}>
+        <h2 className="font-black text-base" style={{ color:C.blue, fontFamily:F.head }}>
           Quick Actions
         </h2>
         <div className="grid grid-cols-2 gap-3">
@@ -656,7 +657,7 @@ const TechRadar = ({ shifts, onHospitalClick, isGuest, onRequireAuth, currentUse
   const firstName = currentUser?.full_name?.split(" ")[0] || "Loading...";
 
   return (
-    <div className="flex-1 overflow-y-auto pb-28" style={{ scrollbarWidth:"none" }}>
+    <div className="flex-1 overflow-y-auto pb-28 bg-transparent" style={{ scrollbarWidth:"none" }}>
       {/* Greeting */}
       <div className="px-5 pt-5 pb-4">
         <p className="text-xs text-slate-400 mb-0.5" style={{ fontFamily:F.mono }}>
@@ -846,7 +847,7 @@ const TechWallet = () => {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto pb-28" style={{ scrollbarWidth:"none" }}>
+    <div className="pb-32 bg-transparent">
       {/* Balance Hero Card */}
       <div className="px-5 pt-5 pb-2">
         <motion.div
@@ -948,7 +949,7 @@ const TechWallet = () => {
 // MANAGER FINANCE TAB
 // ═══════════════════════════════════════════════════════════════════════════════
 const ManagerFinance = ({ hospital }) => (
-  <div className="flex-1 overflow-y-auto pb-28 px-5 pt-5" style={{ scrollbarWidth:"none" }}>
+  <div className="px-5 pt-5 pb-32 bg-transparent">
     <h1 className="font-black text-2xl mb-1" style={{ color:C.blue, fontFamily:F.head }}>Finance</h1>
     <p className="text-sm text-slate-400 mb-5">{hospital}</p>
 
@@ -1093,7 +1094,7 @@ const ManagerProfile = ({ onLogout, currentUser, onEditClick }) => {
   const offset = circumference - (completion / 100) * circumference;
 
   return (
-    <div className="flex-1 overflow-y-auto pb-28" style={{ scrollbarWidth:"none" }}>
+    <div className="bg-transparent">
       <div className="relative h-44" style={{ background:`linear-gradient(135deg, ${C.blue}, #0F2744)` }}>
         <svg viewBox="0 0 430 176" className="absolute inset-0 w-full h-full opacity-20">
           <circle cx="350" cy="40"  r="70"  fill={C.teal}/>
@@ -1174,51 +1175,61 @@ const ManagerProfile = ({ onLogout, currentUser, onEditClick }) => {
 };
 
 const EditTechProfileSheet = ({ open, onClose, currentUser, onSubmit }) => {
-  const [indianStates, setIndianStates] = useState([]);
   const [formData, setFormData] = useState({
     fullName: currentUser?.full_name || "",
+    email: currentUser?.email || "",
     mobile: currentUser?.mobile_number || "",
     bio: currentUser?.bio || "",
     specialty: currentUser?.specialty || "",
     machineSkills: currentUser?.machine_skills || "",
     certifications: currentUser?.certifications_list || "",
     experience: currentUser?.experience_years != null ? currentUser.experience_years.toString() : "",
-    country: currentUser?.country || "",
-    state: currentUser?.state || "",
-    district: currentUser?.district || "",
-    city: currentUser?.city || "",
+    country: currentUser?.country || "India",
+    state: currentUser?.state || "Maharashtra",
+    district: currentUser?.district || "Nashik",
+    area: currentUser?.area || "",
     address: currentUser?.home_address || ""
   });
-
-  useEffect(() => {
-    if (open && indianStates.length === 0) {
-      fetch(`${API_BASE}/api/states`)
-        .then(r => r.json())
-        .then(d => { if(d.states) setIndianStates(d.states); })
-        .catch(e => console.error("Failed fetching states", e));
-    }
-  }, [open, indianStates.length]);
 
   useEffect(() => {
     if (open) {
       setFormData({
         fullName: currentUser?.full_name || "",
+        email: currentUser?.email || "",
         mobile: currentUser?.mobile_number || "",
         bio: currentUser?.bio || "",
         specialty: currentUser?.specialty || "",
         machineSkills: currentUser?.machine_skills || "",
         certifications: currentUser?.certifications_list || "",
         experience: currentUser?.experience_years != null ? currentUser.experience_years.toString() : "",
-        country: currentUser?.country || "",
-        state: currentUser?.state || "",
-        district: currentUser?.district || "",
-        city: currentUser?.city || "",
+        country: currentUser?.country || "India",
+        state: currentUser?.state || "Maharashtra",
+        district: currentUser?.district || "Nashik",
+        area: currentUser?.area || "",
         address: currentUser?.home_address || ""
       });
     }
   }, [open, currentUser]);
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const handleDetectLocation = () => {
+    if (navigator && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          alert("Location detected! (Mocking reverse geocode to 'Panchavati'...)");
+          setFormData(prev => ({ ...prev, area: "Panchavati" }));
+        },
+        (err) => {
+          alert("Please turn on location services to detect your area.");
+          setFormData(prev => ({ ...prev, area: "Panchavati" }));
+        }
+      );
+    } else {
+      alert("Please turn on location services to detect your area.");
+      setFormData(prev => ({ ...prev, area: "Panchavati" }));
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -1236,17 +1247,24 @@ const EditTechProfileSheet = ({ open, onClose, currentUser, onSubmit }) => {
             
             <h3 className="text-xs font-black text-teal-600 uppercase tracking-widest mb-3">Basic Info</h3>
             <div className="flex flex-col gap-4 mb-6">
-              {[
-                { label: "Full Name", name: "fullName", placeholder: "e.g. Sarah Connor" },
-                { label: "Mobile Number", name: "mobile", placeholder: "+91 99999 99999" },
-              ].map(field => (
-                <div key={field.name}>
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide ml-1">{field.label}</label>
-                  <input type="text" name={field.name} value={formData[field.name]} onChange={handleChange}
-                    className="w-full mt-1 px-4 py-3 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-teal-500/30 transition-all"
-                    style={{ background:"#fff", border:"1px solid #E2E8F0", color:C.blue }} placeholder={field.placeholder} />
-                </div>
-              ))}
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide ml-1">Full Name</label>
+                <input type="text" name="fullName" value={formData.fullName} onChange={handleChange}
+                  className="w-full mt-1 px-4 py-3 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-teal-500/30 transition-all"
+                  style={{ background:"#fff", border:"1px solid #E2E8F0", color:C.blue }} placeholder="e.g. Sarah Connor" />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide ml-1">Email Address</label>
+                <input type="email" name="email" value={formData.email} disabled
+                  className="w-full mt-1 px-4 py-3 rounded-xl text-sm font-semibold outline-none transition-all cursor-not-allowed"
+                  style={{ background:"#F8FAFC", border:"1px solid #E2E8F0", color:"#94A3B8" }} placeholder="sarah@example.com" />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide ml-1">Mobile Number</label>
+                <input type="text" name="mobile" value={formData.mobile} disabled
+                  className="w-full mt-1 px-4 py-3 rounded-xl text-sm font-semibold outline-none transition-all cursor-not-allowed"
+                  style={{ background:"#F8FAFC", border:"1px solid #E2E8F0", color:"#94A3B8" }} placeholder="+91 99999 99999" />
+              </div>
             </div>
 
             <h3 className="text-xs font-black text-teal-600 uppercase tracking-widest mb-3">Professional</h3>
@@ -1287,26 +1305,29 @@ const EditTechProfileSheet = ({ open, onClose, currentUser, onSubmit }) => {
               </div>
               <div>
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide ml-1">State</label>
-                <select name="state" value={formData.state} onChange={handleChange}
-                  className="w-full mt-1 px-4 py-3 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-teal-500/30 transition-all appearance-none bg-white"
-                  style={{ border:"1px solid #E2E8F0", color:C.blue }}>
-                  <option value="" disabled>Select a State</option>
-                  {indianStates.map(st => (
-                    <option key={st} value={st}>{st}</option>
-                  ))}
-                </select>
+                <input type="text" disabled value="Maharashtra"
+                  className="w-full mt-1 px-4 py-3 rounded-xl text-sm font-semibold outline-none transition-all cursor-not-allowed"
+                  style={{ background:"#F8FAFC", border:"1px solid #E2E8F0", color:"#94A3B8" }} />
               </div>
-              {[
-                { label: "District", name: "district", placeholder: "e.g., Pune" },
-                { label: "City", name: "city", placeholder: "e.g., Pune" },
-              ].map(field => (
-                <div key={field.name}>
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide ml-1">{field.label}</label>
-                  <input type="text" name={field.name} value={formData[field.name]} onChange={handleChange}
-                    className="w-full mt-1 px-4 py-3 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-teal-500/30 transition-all"
-                    style={{ background:"#fff", border:"1px solid #E2E8F0", color:C.blue }} placeholder={field.placeholder} />
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide ml-1">District</label>
+                <input type="text" disabled value="Nashik"
+                  className="w-full mt-1 px-4 py-3 rounded-xl text-sm font-semibold outline-none transition-all cursor-not-allowed"
+                  style={{ background:"#F8FAFC", border:"1px solid #E2E8F0", color:"#94A3B8" }} />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide ml-1">Area</label>
+                <div className="w-full mt-1 flex items-center bg-white rounded-xl focus-within:ring-2 focus-within:ring-teal-500/30 transition-all overflow-hidden"
+                     style={{ border:"1px solid #E2E8F0" }}>
+                  <input type="text" name="area" value={formData.area} readOnly
+                    className="flex-1 px-4 py-3 text-sm font-semibold outline-none bg-transparent"
+                    style={{ color:C.blue }} placeholder="Detecting area..." />
+                  <button onClick={handleDetectLocation} className="px-4 py-3 h-full flex items-center justify-center font-bold text-sm"
+                    style={{ background: `${C.teal}10`, color: C.teal, borderLeft: "1px solid #E2E8F0" }}>
+                     <MapPin size={16} className="mr-1.5" /> Detect
+                  </button>
                 </div>
-              ))}
+              </div>
               <div>
                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide ml-1">Home Address</label>
                 <textarea name="address" value={formData.address} onChange={handleChange} rows="2"
@@ -1330,13 +1351,13 @@ const EditTechProfileSheet = ({ open, onClose, currentUser, onSubmit }) => {
 const TechProfile = ({ onLogout, isGuest, onRequireAuth, currentUser, onEditClick }) => {
   if (isGuest) {
     return (
-      <div className="flex-1 overflow-y-auto pb-28 px-5 pt-16 flex flex-col items-center" style={{ scrollbarWidth:"none" }}>
+      <div className="px-5 pt-16 pb-28 flex flex-col items-center bg-transparent">
         <div className="w-24 h-24 rounded-3xl flex items-center justify-center shadow-xl mb-6 border-4"
           style={{ background: `linear-gradient(135deg, ${C.teal}, #0F766E)`, borderColor: "rgba(255,255,255,0.4)" }}>
           <User size={40} color="white" strokeWidth={2.5}/>
         </div>
         <h1 className="text-2xl font-black text-center mb-3" style={{ color: C.blue, fontFamily: F.head }}>
-          Your MedShift Profile
+          Your Quick Med Support Profile
         </h1>
         <p className="text-center text-sm font-medium mb-10 px-4 leading-relaxed text-slate-500">
           Track earnings, accept shifts instantly, and build your reputation. Register for free to unlock all features.
@@ -1383,7 +1404,7 @@ const TechProfile = ({ onLogout, isGuest, onRequireAuth, currentUser, onEditClic
   const offset = circumference - (completion / 100) * circumference;
 
   return (
-  <div className="flex-1 overflow-y-auto pb-28" style={{ scrollbarWidth:"none" }}>
+  <div className="bg-transparent">
     <div className="px-5 pt-5 pb-6 relative"
       style={{ background:`linear-gradient(160deg, ${C.blue}, #0F2744)` }}>
       
@@ -1571,13 +1592,13 @@ const FeedPost = ({ post, onAuthorClick }) => {
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 cursor-pointer active:opacity-70" onClick={() => onAuthorClick?.(post.author)}>
-            <p className="font-bold text-sm truncate text-slate-800 dark:text-slate-200" style={{ fontFamily:F.head }}>
+            <p className="font-bold text-sm truncate" style={{ color: C.blue, fontFamily: F.head }}>
               {post.author}
             </p>
             {post.verified && <BadgeCheck size={13} color={C.teal}/>}
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{post.role}</p>
-          <p className="text-[10px] text-slate-500 dark:text-slate-400">{post.time}</p>
+          <p className="text-xs truncate" style={{ color: "var(--c-text-main)", opacity: 0.6 }}>{post.role}</p>
+          <p className="text-[10px]" style={{ color: "var(--c-text-main)", opacity: 0.6 }}>{post.time}</p>
         </div>
         <button className="w-8 h-8 rounded-xl flex items-center justify-center dark:bg-slate-700"
           style={{ background:"#F8FAFC" }}>
@@ -1586,7 +1607,7 @@ const FeedPost = ({ post, onAuthorClick }) => {
       </div>
 
       {/* Body text */}
-      <p className="px-4 pb-3 text-base text-slate-800 dark:text-slate-200 leading-relaxed">{post.body}</p>
+      <p className="px-4 pb-3 text-base leading-relaxed" style={{ color: "var(--c-text-main)" }}>{post.body}</p>
 
       {/* Image if any */}
       {post.hasImage && post.imageType === "mri" && (
@@ -1637,7 +1658,7 @@ const FeedPost = ({ post, onAuthorClick }) => {
 };
 
 const CommunityFeed = ({ posts, onAuthorClick }) => (
-  <div className="flex-1 overflow-y-auto pb-28 px-4 pt-4" style={{ scrollbarWidth:"none" }}>
+  <div className="flex-1 overflow-y-auto pb-28 px-4 pt-4 bg-transparent" style={{ scrollbarWidth:"none" }}>
     {/* Search */}
     <div className="flex items-center gap-2 mb-4">
       <div className="flex-1 flex items-center gap-2 px-3.5 py-2.5 rounded-2xl"
@@ -1685,7 +1706,7 @@ const ShiftsTab = ({ role, managerShifts, techShifts, isGuest, onRequireAuth, cu
 
   if (role === "technician" && isGuest) {
     return (
-      <div className="flex-1 overflow-y-auto pb-28 px-5 pt-16 flex flex-col items-center" style={{ scrollbarWidth:"none" }}>
+      <div className="flex-1 overflow-y-auto pb-28 px-5 pt-16 flex flex-col items-center bg-transparent" style={{ scrollbarWidth:"none" }}>
         <div className="w-20 h-20 rounded-3xl flex items-center justify-center mb-6"
           style={{ background: `${C.blue}10` }}>
           <Calendar size={32} color={C.blue}/>
@@ -1715,7 +1736,7 @@ const ShiftsTab = ({ role, managerShifts, techShifts, isGuest, onRequireAuth, cu
   });
 
   return (
-    <div className="flex-1 overflow-y-auto pb-28 px-5 pt-5" style={{ scrollbarWidth:"none" }}>
+    <div className="flex-1 overflow-y-auto pb-28 px-5 pt-5 bg-transparent" style={{ scrollbarWidth:"none" }}>
       <h1 className="font-black text-2xl mb-1" style={{ color:C.blue, fontFamily:F.head }}>
         {role === "manager" ? "Posted Shifts" : "My Shifts"}
       </h1>
@@ -1877,7 +1898,7 @@ const TechAuthScreen = ({ onClose, onSuccess, initialMode = "login" }) => {
           )}
 
           <h1 className="text-2xl font-black text-center mb-2" style={{ color: C.blue, marginTop: isRegistering ? "1rem" : "0" }}>
-            {isRegistering ? "Apply to Join MedShift" : "Join MedShift to Accept Shifts"}
+            {isRegistering ? "Apply to Join Quick Med Support" : "Join Quick Med Support to Accept Shifts"}
           </h1>
           <p className="text-center text-slate-500 text-sm mb-8 px-2 leading-relaxed">
             {isRegistering 
@@ -1931,7 +1952,7 @@ const TechAuthScreen = ({ onClose, onSuccess, initialMode = "login" }) => {
 
           <p className="text-center text-sm font-bold text-slate-500 hover:text-slate-800 cursor-pointer transition-colors"
              onClick={() => setIsRegistering(!isRegistering)}>
-            {isRegistering ? "Already have an account? Log In" : "New to MedShift? Apply as a Technician"}
+            {isRegistering ? "Already have an account? Log In" : "New to Quick Med Support? Apply as a Technician"}
           </p>
           
           {isRegistering && <div className="h-10 w-full flex-shrink-0" />}
@@ -1967,7 +1988,7 @@ const DemoLoginScreen = ({ onLogin }) => (
           </svg>
         </div>
         <h1 className="text-4xl font-black text-white tracking-tight" style={{ fontFamily: F.head }}>
-          MedShift
+          Quick Med Support
         </h1>
         <p className="text-slate-400 mt-2 text-center text-sm font-medium leading-relaxed max-w-[260px]">
           The emergency staffing platform for healthcare.
@@ -2492,36 +2513,41 @@ export default function MedShiftFull() {
     }
   }, [isAuthenticated]);
 
+  const fetchManagerData = async () => {
+    if (!currentUser?.id) return;
+    setIsLoading(true);
+    fetch(`${API_BASE}/api/dashboard/manager?manager_id=${currentUser.id}`)
+      .then(res => res.json())
+      .then(data => {
+          if (data.posted_shifts) {
+              const formattedShifts = data.posted_shifts.map(s => ({
+                id: s.id,
+                title: s.title,
+                time: new Date(s.start_time).toLocaleString(undefined, {
+                  month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit'
+                }),
+                pay: "₹" + s.hourly_rate + "/hr",
+                status: s.status,
+                statusLabel: s.status === 'searching' ? 'Searching…' : s.status,
+                color: C.amber,
+                icon: ScanLine,
+                dept: s.department,
+                duration: s.duration + " hrs",
+                totalEst: "₹" + (s.hourly_rate * s.duration)
+              }));
+              setManagerShifts(formattedShifts);
+          }
+          setIsLoading(false);
+      })
+      .catch(err => {
+          console.error("Dashboard fetch error:", err);
+          setIsLoading(false);
+      });
+  };
+
   useEffect(() => {
     if (role === "manager" && isAuthenticated && currentUser?.id) {
-      setIsLoading(true);
-      fetch(`${API_BASE}/api/dashboard/manager?manager_id=${currentUser.id}`)
-        .then(res => res.json())
-        .then(data => {
-            if (data.posted_shifts) {
-                const formattedShifts = data.posted_shifts.map(s => ({
-                  id: s.id,
-                  title: s.title,
-                  time: new Date(s.start_time).toLocaleString(undefined, {
-                    month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit'
-                  }),
-                  pay: "₹" + s.hourly_rate + "/hr",
-                  status: s.status,
-                  statusLabel: s.status === 'searching' ? 'Searching…' : s.status,
-                  color: C.amber,
-                  icon: ScanLine,
-                  dept: s.department,
-                  duration: s.duration + " hrs",
-                  totalEst: "₹" + (s.hourly_rate * s.duration)
-                }));
-                setManagerShifts(formattedShifts);
-            }
-            setIsLoading(false);
-        })
-        .catch(err => {
-            console.error("Dashboard fetch error:", err);
-            setIsLoading(false);
-        });
+      fetchManagerData();
     } else {
       setIsLoading(false);
     }
@@ -2532,6 +2558,20 @@ export default function MedShiftFull() {
   const [selectedHospital, setSelectedHospital] = useState(null);
   const [selectedTechnician, setSelectedTechnician] = useState(null);
   const [callingUser, setCallingUser] = useState(null);
+
+  const handleRefresh = async () => {
+    // 1. Fire off the actual data fetches in the background (DO NOT await them here)
+    if (isAuthenticated) {
+      fetchCommunityPosts();
+      fetchAvailableShifts();
+      if (role === "manager" && currentUser?.id) {
+        fetchManagerData();
+      }
+    }
+
+    // 2. Force the UI spinner to hide after exactly 1.5 seconds
+    await new Promise(resolve => setTimeout(resolve, 1500));
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("medshift_role");
@@ -2724,7 +2764,7 @@ export default function MedShiftFull() {
       case "community": return <CommunityFeed posts={posts} onAuthorClick={(name) => role === 'technician' && setSelectedHospital(name)} />;
       case "profile":
         return role === "manager" ? (
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col flex-1 h-full gap-6 w-full">
             <ManagerProfile onLogout={handleLogout} currentUser={currentUser} onEditClick={() => setEditProfileOpen(true)} />
             <div className="mx-1 mt-2 pt-6 border-t border-slate-200">
               <h3 className="text-xs font-black mb-3 px-4 uppercase tracking-widest" style={{ fontFamily:F.head, color:"#0D9488" }}>Finance & Payments</h3>
@@ -2732,7 +2772,7 @@ export default function MedShiftFull() {
             </div>
           </div>
         ) : (
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col flex-1 h-full gap-6 w-full">
             <TechProfile onLogout={handleLogout} isGuest={isGuest} onRequireAuth={handleRequireAuth} currentUser={currentUser} onEditClick={() => setEditTechProfileOpen(true)} />
             {!isGuest && (
               <div className="mx-1 mt-2 pt-6 border-t border-slate-200">
@@ -2765,17 +2805,19 @@ export default function MedShiftFull() {
       />
 
       {/* Main content area */}
-      <main className="flex-1 overflow-y-auto pt-16 pb-20 overscroll-y-contain scrollbar-hide px-3 w-full">
-          <AnimatePresence mode="wait">
-            <motion.div key={activeTab + role}
-              className="flex flex-col flex-1 w-full"
-              initial={{ opacity:0, x:16 }}
-              animate={{ opacity:1, x:0 }}
-              exit={{ opacity:0, x:-16 }}
-              transition={{ duration:0.2 }}>
-              {renderTab()}
-            </motion.div>
-          </AnimatePresence>
+      <main className="flex-1 overflow-y-auto pt-0 pb-0 overscroll-y-contain scrollbar-hide px-3 w-full bg-transparent">
+          <PullToRefresh onRefresh={handleRefresh}>
+            <AnimatePresence mode="wait">
+              <motion.div key={activeTab + role}
+                className="flex flex-col flex-1 w-full min-h-[calc(100vh-100px)] bg-transparent scrollbar-hide"
+                initial={{ opacity:0, x:16 }}
+                animate={{ opacity:1, x:0 }}
+                exit={{ opacity:0, x:-16 }}
+                transition={{ duration:0.2 }}>
+                {renderTab()}
+              </motion.div>
+            </AnimatePresence>
+          </PullToRefresh>
         </main>
 
         <BottomNav active={activeTab} setActive={setActiveTab} role={role} onAddClick={() => role === "manager" ? setCreateMenuOpen(true) : setCreatePostOpen(true)} isGuest={isGuest} onRequireAuth={handleRequireAuth}/>
@@ -2836,7 +2878,7 @@ export default function MedShiftFull() {
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="fixed inset-0 z-[999999]" style={{ width: '100%', height: '100%' }}>
               <CallingScreen 
-                callee={typeof callingUser === 'string' && callingUser !== true ? callingUser : "MedShift Contact"} 
+                callee={typeof callingUser === 'string' && callingUser !== true ? callingUser : "Quick Med Support Contact"} 
                 onEnd={() => setCallingUser(null)} 
               />
             </motion.div>

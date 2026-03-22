@@ -50,6 +50,7 @@ body {
   background-color: var(--c-pearl);
   color: var(--c-text-main);
   transition: background-color 0.3s ease, color 0.3s ease;
+  overscroll-behavior-y: none;
 }
 
 input, textarea {
@@ -59,4 +60,17 @@ input, textarea {
 
 #root {
   padding-top: env(safe-area-inset-top);
+}
+
+.ptr, .ptr__children {
+  background-color: transparent !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+  height: 100% !important;
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+.ptr__children::-webkit-scrollbar {
+  display: none !important;
 }
