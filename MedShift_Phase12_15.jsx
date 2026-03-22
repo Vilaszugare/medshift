@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { HospitalProfile, TechnicianProfile, CallingScreen } from './MedShift_Phase10_11.jsx';
 import { App as CapacitorApp } from '@capacitor/app';
 import {
   Bell, Home, Calendar, Users, User, ArrowLeft, CheckCircle,
@@ -11,9 +12,21 @@ import {
   Building2, Stethoscope, ScanLine, ThumbsUp, Send,
   BarChart3, Phone, ExternalLink, Sparkles, DollarSign,
   ArrowUpRight, ArrowDownLeft, RefreshCw, Eye, Hash,
+  UploadCloud, FileBadge,
   ChevronDown, Search, Timer, Cpu, Plus, Image as ImageIcon,
-  Moon, Sun
+  Moon, Sun, LogOut, Edit2
 } from "lucide-react";
+import { Capacitor } from '@capacitor/core';
+// const rawUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const rawUrl = import.meta.env.VITE_API_URL || "https://medshift-backend-3ktw.onrender.com";
+let processedUrl = rawUrl.endsWith("/") ? rawUrl.slice(0, -1) : rawUrl;
+
+// If running natively on Android emulator, rewrite localhost to the loopback IP
+if (Capacitor.isNativePlatform() && processedUrl.includes("localhost")) {
+  processedUrl = processedUrl.replace("localhost", "10.0.2.2");
+}
+
+const API_BASE = processedUrl;
 
 // ─── PALETTE ─────────────────────────────────────────────────────────────────
 const C = {
@@ -37,47 +50,9 @@ const F = {
 // ═══════════════════════════════════════════════════════════════════════════════
 // DEMO DATA — PHASE 13 (MANAGER)
 // ═══════════════════════════════════════════════════════════════════════════════
-const MANAGER = {
-  name:       "Dr. A. Sharma",
-  firstName:  "Arjun",
-  initials:   "AS",
-  hospital:   "Nashik Lifeline Hospital",
-  area:       "Panchavati Area, Nashik",
-  role:       "Chief Medical Officer",
-  verified:   true,
-  rating:     4.8,
-  totalHires: 94,
-};
+// Purged MANAGER object as requested
 
-const MANAGER_SHIFTS = [
-  {
-    id: "s1",
-    title:    "Urgent X-Ray Technician",
-    time:     "Today, 2:00 PM – 8:00 PM",
-    pay:      "₹600/hr",
-    status:   "searching",
-    statusLabel: "Searching…",
-    color:    C.amber,
-    icon:     ScanLine,
-    dept:     "Radiology – Emergency",
-    duration: "6 hrs",
-    totalEst: "₹3,600",
-  },
-  {
-    id: "s2",
-    title:    "MRI Specialist (Siemens 1.5T)",
-    time:     "Tomorrow, 9:00 AM – 5:00 PM",
-    pay:      "₹800/hr",
-    status:   "matched",
-    statusLabel: "Matched with Vilas Z.",
-    matchedWith: "Vilas Z.",
-    color:    C.green,
-    icon:     Cpu,
-    dept:     "Diagnostic Imaging",
-    duration: "8 hrs",
-    totalEst: "₹6,400",
-  },
-];
+const MANAGER_SHIFTS = [];
 
 const MANAGER_NOTIFICATIONS = [
   {
@@ -119,17 +94,7 @@ const MANAGER_NOTIFICATIONS = [
 // ═══════════════════════════════════════════════════════════════════════════════
 // DEMO DATA — PHASE 14 (TECHNICIAN)
 // ═══════════════════════════════════════════════════════════════════════════════
-const TECHNICIAN = {
-  name:        "Vilas Z.",
-  fullName:    "Vilas Zende",
-  initials:    "VZ",
-  title:       "Certified MRI / X-Ray Technician",
-  subtitle:    "B.Tech IT & Certified MRI/X-Ray Tech",
-  location:    "Nashik, Maharashtra",
-  rating:      4.9,
-  totalShifts: 42,
-  available:   true,
-};
+// Purged TECHNICIAN object as requested
 
 const WALLET = {
   balance:       "₹12,450",
@@ -146,34 +111,7 @@ const WALLET = {
   ],
 };
 
-const TECH_SHIFTS = [
-  {
-    id:       "ts1",
-    hospital: "Nashik Lifeline Hospital",
-    distance: "3.2 km",
-    equipment:"Urgent X-Ray",
-    pay:      "₹600/hr",
-    time:     "Today, 2:00 PM",
-    urgent:   true,
-    dept:     "Emergency Radiology",
-    duration: "6 hrs",
-    totalEst: "₹3,600",
-    color:    C.amber,
-  },
-  {
-    id:       "ts2",
-    hospital: "City Care Medical Center",
-    distance: "5.5 km",
-    equipment:"CT Scan",
-    pay:      "₹750/hr",
-    time:     "Today, 6:00 PM",
-    urgent:   false,
-    dept:     "Diagnostic Imaging",
-    duration: "8 hrs",
-    totalEst: "₹6,000",
-    color:    C.teal,
-  },
-];
+const TECH_SHIFTS = [];
 
 const TECH_NOTIFICATIONS = [
   {
@@ -215,54 +153,7 @@ const TECH_NOTIFICATIONS = [
 // ═══════════════════════════════════════════════════════════════════════════════
 // DEMO DATA — PHASE 15 (COMMUNITY FEED)
 // ═══════════════════════════════════════════════════════════════════════════════
-const FEED_POSTS = [
-  {
-    id:      "p1",
-    type:    "post",
-    author:  "Dr. A. Sharma",
-    initials:"AS",
-    role:    "CMO · Nashik Lifeline Hospital",
-    avatarColor: C.blue,
-    time:    "2 hours ago",
-    verified: true,
-    body:    "We are upgrading our diagnostic wing at Nashik Lifeline this month! Looking forward to welcoming more temporary tech staff to try out our new GE Healthcare MRI machines. 🏥",
-    hasImage: true,
-    imageType:"mri",
-    likes:   47,
-    comments:12,
-    shares:  6,
-    liked:   false,
-  },
-  {
-    id:      "p2",
-    type:    "post",
-    author:  "Vilas Z.",
-    initials:"VZ",
-    role:    "MRI/X-Ray Tech · Nashik",
-    avatarColor: C.teal,
-    time:    "5 hours ago",
-    verified: false,
-    body:    "Just wrapped up a challenging 10-hour emergency shift. Always double-check your radiation safety protocols, everyone! Stay safe. ☢️🛡️",
-    hasImage: false,
-    likes:   89,
-    comments:23,
-    shares:  14,
-    liked:   true,
-  },
-  {
-    id:      "p3",
-    type:    "ad",
-    author:  "Naukri Medical",
-    initials:"NM",
-    role:    "Sponsored · Career Development",
-    avatarColor: "#7C3AED",
-    time:    "Sponsored",
-    body:    "Advance your career. Get certified in Advanced Ultrasonography in just 6 weeks. Industry-recognized certification with 100% placement support.",
-    cta:     "Click Here to Apply →",
-    likes:   null,
-    badge:   "AD",
-  },
-];
+const FEED_POSTS = [];
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SHARED MICRO-COMPONENTS
@@ -309,7 +200,7 @@ const TopHeader = ({ role, onBellClick, unreadCount, isDark, toggleDark }) => (
   </div>
 );
 
-const BottomNav = ({ active, setActive, role, onAddClick }) => {
+const BottomNav = ({ active, setActive, role, onAddClick, isGuest, onRequireAuth }) => {
   const tabsLeft = [
     { id:"home",      label: "Home",       icon: Home      },
     { id:"shifts",    label: "Shifts",     icon: Calendar  },
@@ -349,7 +240,13 @@ const BottomNav = ({ active, setActive, role, onAddClick }) => {
         <div className="flex-1 flex justify-center -mt-8 pointer-events-auto relative z-20">
           <motion.button 
             whileTap={{ scale: 0.9 }}
-            onClick={onAddClick}
+            onClick={() => {
+              if (isGuest && role === "technician") {
+                onRequireAuth();
+              } else {
+                onAddClick();
+              }
+            }}
             className="w-14 h-14 rounded-full flex items-center justify-center text-white shadow-teal-500/50"
             style={{ 
               background: C.teal,
@@ -496,10 +393,78 @@ const NotificationCenter = ({ open, onClose, notifications, onMarkAll }) => {
   );
 };
 
+
+const ApplicantsModal = ({ open, onClose, shift, onApplicantAction }) => {
+  const [applicants, setApplicants] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (open && shift) {
+      setLoading(true);
+      fetch(`${API_BASE}/api/shifts/${shift.id}/applicants`)
+        .then(res => res.json())
+        .then(data => {
+          setApplicants(data);
+          setLoading(false);
+        }).catch(() => setLoading(false));
+    }
+  }, [open, shift]);
+
+  const handleAction = async (techId, action) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/shifts/${shift.id}/applicants/${techId}/${action}`, {
+        method: "PUT"
+      });
+      if (res.ok) {
+        setApplicants(prev => prev.map(a => a.technician_id === techId ? { ...a, status: action === 'accept' ? 'accepted' : 'rejected' } : a));
+        if (onApplicantAction) onApplicantAction();
+      } else {
+        const body = await res.json();
+        alert(body.detail || "Failed to update status");
+      }
+    } catch (e) { console.error(e); }
+  };
+
+  if (!open || !shift) return null;
+
+  return (
+    <div className="fixed inset-0 z-[999] flex flex-col bg-slate-50 animate-in fade-in zoom-in-95 duration-200" style={{ fontFamily: F.body }}>
+      <div className="flex items-center justify-between p-4 bg-white shadow-sm border-b border-slate-100 mt-10">
+        <h2 className="font-black text-lg text-slate-800" style={{ fontFamily:F.head }}>Applicants - {shift.title}</h2>
+        <button onClick={onClose} className="p-2 rounded-full bg-slate-100"><X size={20} /></button>
+      </div>
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 pb-20">
+        {loading ? <p className="text-center text-slate-400 mt-10">Loading applicants...</p> : 
+         applicants.length === 0 ? <p className="text-center text-slate-400 mt-10">No applicants yet.</p> :
+         applicants.map(a => (
+           <div key={a.id} className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+             <div className="flex justify-between items-start mb-2">
+               <div>
+                 <h3 className="font-black text-slate-800 text-base">{a.name}</h3>
+                 <span className="text-xs text-slate-500 font-medium">Rating: {a.rating}★</span>
+               </div>
+               <span className={`text-[10px] uppercase font-black px-2 py-1 rounded-full ${a.status === 'accepted' ? 'bg-green-100 text-green-700' : a.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                 {a.status}
+               </span>
+             </div>
+             {a.status === 'pending' && (
+               <div className="flex gap-2 mt-3 pt-3 border-t border-slate-50">
+                 <button onClick={() => handleAction(a.technician_id, 'accept')} className="flex-1 flex justify-center items-center bg-teal-600 text-white font-bold py-2.5 rounded-xl text-sm transition-opacity active:opacity-75">Accept</button>
+                 <button onClick={() => handleAction(a.technician_id, 'reject')} className="flex-1 flex justify-center items-center bg-red-100 text-red-600 font-bold py-2.5 rounded-xl text-sm transition-opacity active:opacity-75">Reject</button>
+               </div>
+             )}
+           </div>
+         ))
+        }
+      </div>
+    </div>
+  );
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // PHASE 13 — MANAGER DASHBOARD
 // ═══════════════════════════════════════════════════════════════════════════════
-const ManagerDashboard = ({ shifts, onCreateShift }) => {
+const ManagerDashboard = ({ shifts, onCreateShift, onViewProfileClick, onCompleteShift, onCancelShift, currentUser, onViewApplicants }) => {
   const [boosted, setBoosted] = useState(false);
 
   return (
@@ -510,9 +475,9 @@ const ManagerDashboard = ({ shifts, onCreateShift }) => {
           Wednesday, 18 Mar 2026
         </p>
         <h1 className="font-black text-2xl mb-1" style={{ color:C.blue, fontFamily:F.head }}>
-          Good morning, Dr. Sharma 👋
+          Good morning, {currentUser?.full_name ? currentUser.full_name.split(" ")[0] : "..."} 👋
         </h1>
-        <p className="text-sm text-slate-400">{MANAGER.hospital} · {MANAGER.area}</p>
+        <p className="text-sm text-slate-400">{currentUser?.hospital || "Hospital"} · {currentUser?.area || ""}</p>
 
         {/* Stats strip */}
         <div className="grid grid-cols-3 gap-2.5 mt-4">
@@ -601,29 +566,51 @@ const ManagerDashboard = ({ shifts, onCreateShift }) => {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between mt-3 pt-3"
-                  style={{ borderTop:`1px solid ${s.color}15` }}>
-                  <div>
-                    <span className="text-xs text-slate-400">Total estimate: </span>
-                    <span className="text-xs font-black" style={{ color:C.blue, fontFamily:F.mono }}>
-                      {s.totalEst}
-                    </span>
-                  </div>
-                  {s.status === "searching" ? (
-                    <motion.button
-                      whileTap={{ scale:0.93 }}
-                      onClick={() => setBoosted(!boosted)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black"
-                      style={{ background: boosted ? `${C.green}15` : `${C.amber}15`,
-                        color: boosted ? C.green : C.amber }}>
-                      {boosted ? <><CheckCircle size={12}/> Boosted!</> : <><Zap size={12}/> Boost Post</>}
-                    </motion.button>
+                <div className="flex flex-col mt-4 pt-3" style={{ borderTop:`1px solid ${s.color}15` }}>
+                  {(s.accepted_count > 0 || (s.accepted_technicians && s.accepted_technicians.length > 0)) ? (
+                    <div className="flex items-center justify-between mb-3 w-full bg-slate-50 p-2.5 rounded-xl border border-slate-100 pb-3">
+                      <div className="flex flex-col">
+                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Accepted Technicians</span>
+                        <div className="text-sm font-black text-left flex items-center gap-1.5 mt-0.5" style={{ color: C.teal, fontFamily:F.head }}>
+                          {s.accepted_count} / {s.max_technicians || 1} Filled
+                        </div>
+                      </div>
+                      <button onClick={() => onViewApplicants?.(s)} className="px-4 py-2 rounded-full text-xs font-bold shadow-sm" style={{ background: C.teal, color: 'white' }}>
+                        Manage
+                      </button>
+                    </div>
                   ) : (
-                    <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold"
-                      style={{ background:`${C.blue}08`, color:C.blue }}>
-                      <Eye size={12}/> View Profile
-                    </button>
+                    <div className="flex items-center justify-between mb-3 px-1">
+                      <span className="text-xs text-slate-400 font-medium">0 Technicians Accepted</span>
+                      <button onClick={() => onViewApplicants?.(s)} className="text-xs font-black px-3 py-1.5 rounded-xl" style={{ background: `${C.amber}15`, color:C.amber }}>Manage Applicants</button>
+                    </div>
                   )}
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-xs text-slate-400">Total estimate: </span>
+                      <span className="text-xs font-black" style={{ color:C.blue, fontFamily:F.mono }}>
+                        {s.totalEst || `₹${s.hourly_rate * (s.duration || 1)}`}
+                      </span>
+                    </div>
+                    {s.status === "searching" || s.status === "open" ? (
+                      <motion.button
+                        whileTap={{ scale:0.93 }}
+                        onClick={() => onCancelShift?.(s.id)}
+                        className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-black"
+                        style={{ background: "#FEF2F2", color: "#EF4444", border: "1px solid #FECACA" }}>
+                        <X size={14}/> Cancel Shift
+                      </motion.button>
+                    ) : (
+                      <motion.button
+                        whileTap={{ scale:0.93 }}
+                        onClick={() => onCompleteShift?.(s.id)}
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black shadow-sm"
+                        style={{ background: C.green, color: "white" }}>
+                        <CheckCircle size={14} color="white" /> Complete Shift
+                      </motion.button>
+                    )}
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -662,9 +649,11 @@ const ManagerDashboard = ({ shifts, onCreateShift }) => {
 // ═══════════════════════════════════════════════════════════════════════════════
 // PHASE 14 — TECHNICIAN JOB RADAR
 // ═══════════════════════════════════════════════════════════════════════════════
-const TechRadar = ({ shifts }) => {
+const TechRadar = ({ shifts, onHospitalClick, isGuest, onRequireAuth, currentUser }) => {
   const [accepted, setAccepted] = useState({});
   const [available, setAvailable] = useState(true);
+
+  const firstName = currentUser?.full_name?.split(" ")[0] || "Loading...";
 
   return (
     <div className="flex-1 overflow-y-auto pb-28" style={{ scrollbarWidth:"none" }}>
@@ -674,14 +663,17 @@ const TechRadar = ({ shifts }) => {
           Wednesday, 18 Mar 2026
         </p>
         <h1 className="font-black text-2xl mb-1" style={{ color:C.blue, fontFamily:F.head }}>
-          Hi, Vilas 👋
+          Hi, {firstName} 👋
         </h1>
-        <p className="text-sm text-slate-400">{TECHNICIAN.location} · {TECHNICIAN.rating}★ · {TECHNICIAN.totalShifts} shifts</p>
+        <p className="text-sm text-slate-400">{currentUser?.location || "Loading..."} · {currentUser?.rating || "New"}★ · {currentUser?.total_shifts || 0} shifts</p>
 
         {/* Availability toggle */}
         <motion.button
           whileTap={{ scale:0.97 }}
-          onClick={() => setAvailable(!available)}
+          onClick={() => {
+            if (isGuest) { onRequireAuth(); return; }
+            setAvailable(!available);
+          }}
           className="w-full mt-4 rounded-2xl px-5 py-4 flex items-center justify-between"
           style={{
             background: available
@@ -740,7 +732,8 @@ const TechRadar = ({ shifts }) => {
             </span>
           </h2>
           <button className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl"
-            style={{ background:`${C.blue}08`, color:C.blue }}>
+            style={{ background:`${C.blue}08`, color:C.blue }}
+            onClick={() => { if (isGuest) onRequireAuth(); }}>
             <Filter size={12}/> Filter
           </button>
         </div>
@@ -766,8 +759,11 @@ const TechRadar = ({ shifts }) => {
 
             <div className="p-4">
               <div className="flex items-start justify-between mb-2.5">
-                <div className="flex-1">
-                  <h3 className="font-black text-base" style={{ color:C.blue, fontFamily:F.head }}>
+                <div className="flex-1 cursor-pointer" onClick={() => {
+                  if (isGuest) { onRequireAuth(); return; }
+                  onHospitalClick?.(s.hospital);
+                }}>
+                  <h3 className="font-black text-base active:opacity-70" style={{ color:C.blue, fontFamily:F.head }}>
                     {s.hospital}
                   </h3>
                   <p className="text-xs text-slate-400 mt-0.5">{s.dept}</p>
@@ -799,7 +795,10 @@ const TechRadar = ({ shifts }) => {
                 </div>
                 <motion.button
                   whileTap={{ scale:0.93 }}
-                  onClick={() => setAccepted(a => ({ ...a, [s.id]: !a[s.id] }))}
+                  onClick={() => {
+                    if (isGuest) { onRequireAuth(); return; }
+                    setAccepted(a => ({ ...a, [s.id]: !a[s.id] }));
+                  }}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-2xl font-black text-sm text-white"
                   style={{
                     background: accepted[s.id]
@@ -948,10 +947,10 @@ const TechWallet = () => {
 // ═══════════════════════════════════════════════════════════════════════════════
 // MANAGER FINANCE TAB
 // ═══════════════════════════════════════════════════════════════════════════════
-const ManagerFinance = () => (
+const ManagerFinance = ({ hospital }) => (
   <div className="flex-1 overflow-y-auto pb-28 px-5 pt-5" style={{ scrollbarWidth:"none" }}>
     <h1 className="font-black text-2xl mb-1" style={{ color:C.blue, fontFamily:F.head }}>Finance</h1>
-    <p className="text-sm text-slate-400 mb-5">{MANAGER.hospital}</p>
+    <p className="text-sm text-slate-400 mb-5">{hospital}</p>
 
     {/* Invoice card */}
     <div className="rounded-3xl p-5 mb-4"
@@ -1003,102 +1002,467 @@ const ManagerFinance = () => (
 // ═══════════════════════════════════════════════════════════════════════════════
 // PROFILE SCREENS
 // ═══════════════════════════════════════════════════════════════════════════════
-const ManagerProfile = () => (
-  <div className="flex-1 overflow-y-auto pb-28" style={{ scrollbarWidth:"none" }}>
-    <div className="relative h-44"
-      style={{ background:`linear-gradient(135deg, ${C.blue}, #0F2744)` }}>
-      <svg viewBox="0 0 430 176" className="absolute inset-0 w-full h-full opacity-20">
-        <circle cx="350" cy="40"  r="70"  fill={C.teal}/>
-        <circle cx="80"  cy="140" r="50"  fill={C.amber}/>
-        <circle cx="220" cy="88"  r="90"  fill="rgba(255,255,255,0.05)"/>
-      </svg>
-      <div className="absolute bottom-0 left-5 translate-y-1/2">
-        <div className="w-20 h-20 rounded-3xl border-4 border-white flex items-center justify-center font-black text-3xl text-white shadow-xl"
-          style={{ background:`linear-gradient(135deg, ${C.teal}, #0F766E)` }}>
-          AS
-        </div>
-      </div>
-    </div>
-    <div className="px-5 pt-14 pb-5">
-      <div className="flex items-start justify-between mb-1">
-        <div>
-          <h1 className="font-black text-2xl" style={{ color:C.blue, fontFamily:F.head }}>
-            {MANAGER.name}
-          </h1>
-          <p className="text-sm text-slate-400">{MANAGER.role}</p>
-        </div>
-        <span className="flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full mt-1"
-          style={{ background:`${C.teal}10`, color:C.teal }}>
-          <BadgeCheck size={11}/> Verified
-        </span>
-      </div>
-      <div className="flex items-center gap-1.5 text-sm text-slate-500 mt-2 mb-4">
-        <Building2 size={14} color="#94A3B8"/>{MANAGER.hospital}
-        <span className="text-slate-300">·</span>
-        <MapPin size={14} color="#94A3B8"/>{MANAGER.area}
-      </div>
-      {[
-        { label:"Hospital", value:MANAGER.hospital },
-        { label:"Location", value:MANAGER.area      },
-        { label:"Dept",     value:"Radiology, ICU, OT" },
-        { label:"NABH",     value:"Accredited ✓"    },
-      ].map(({ label, value }) => (
-        <div key={label} className="flex justify-between py-3"
-          style={{ borderBottom:"1px solid #F1F5F9" }}>
-          <span className="text-xs font-bold text-slate-400 uppercase tracking-wide"
-            style={{ fontFamily:F.mono }}>{label}</span>
-          <span className="text-sm font-semibold" style={{ color:C.blue }}>{value}</span>
-        </div>
-      ))}
-    </div>
-  </div>
-);
+const EditManagerProfileSheet = ({ open, onClose, currentUser, onSubmit }) => {
+  const [formData, setFormData] = useState({
+    fullName: currentUser?.full_name || "",
+    mobile: currentUser?.mobile_number || "",
+    role: currentUser?.job_title || (currentUser?.role === "manager" ? "Hospital Manager" : ""),
+    hospitalName: currentUser?.hospital || "",
+    hospitalLocation: currentUser?.area || "",
+    facilities: currentUser?.facilities || "",
+    certifications: currentUser?.certifications || ""
+  });
 
-const TechProfile = () => (
-  <div className="flex-1 overflow-y-auto pb-28" style={{ scrollbarWidth:"none" }}>
-    <div className="px-5 pt-5 pb-6"
-      style={{ background:`linear-gradient(160deg, ${C.blue}, #0F2744)` }}>
-      <div className="flex flex-col items-center">
-        <div className="w-24 h-24 rounded-3xl border-4 flex items-center justify-center font-black text-4xl text-white mb-3 shadow-2xl"
-          style={{ background:`linear-gradient(135deg, ${C.teal}, #0F766E)`,
-            borderColor:"rgba(255,255,255,0.2)" }}>
-          VZ
+  useEffect(() => {
+    if (open) {
+      setFormData({
+        fullName: currentUser?.full_name || "",
+        mobile: currentUser?.mobile_number || "",
+        role: currentUser?.job_title || (currentUser?.role === "manager" ? "Hospital Manager" : ""),
+        hospitalName: currentUser?.hospital || "",
+        hospitalLocation: currentUser?.area || "",
+        facilities: currentUser?.facilities || "",
+        certifications: currentUser?.certifications || ""
+      });
+    }
+  }, [open, currentUser]);
+
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div initial={{ opacity:0, y:"100%" }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:"100%" }}
+          transition={{ type:"spring", damping:25, stiffness:300 }}
+          className="fixed inset-0 z-[99999] flex flex-col" style={{ background:C.pearl, fontFamily:F.head }}>
+          <div className="flex items-center justify-between px-5 py-4 bg-white/80 backdrop-blur-md relative z-10" style={{ borderBottom:"1px solid #F1F5F9" }}>
+            <h2 className="text-xl font-black" style={{ color:C.blue }}>Edit Profile</h2>
+            <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-2xl bg-white shadow-sm text-slate-400 active:scale-95 transition-transform">
+              <X size={20} />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto px-5 py-6">
+            <div className="flex flex-col gap-4">
+              {[
+                { label: "Full Name", name: "fullName", placeholder: "e.g. John Doe" },
+                { label: "Mobile Number", name: "mobile", placeholder: "+91 99999 99999" },
+                { label: "Role in Hospital", name: "role", placeholder: "e.g., CMO, Assistant Manager" },
+                { label: "Hospital Name", name: "hospitalName", placeholder: "e.g., City Care Medical Center" },
+                { label: "Hospital Location/Address", name: "hospitalLocation", placeholder: "e.g., Pune, India" },
+                { label: "Facilities", name: "facilities", placeholder: "e.g., Radiology, Oncology" },
+                { label: "Certifications", name: "certifications", placeholder: "e.g., NABH Accredited" }
+              ].map(field => (
+                <div key={field.name}>
+                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wide ml-1">{field.label}</label>
+                  <input type="text" name={field.name} value={formData[field.name]} onChange={handleChange}
+                    className="w-full mt-1 px-4 py-3.5 rounded-2xl text-sm font-semibold outline-none focus:ring-2 transition-all shadow-sm"
+                    style={{ background:"#fff", border:"1px solid #E2E8F0", color:C.blue }} placeholder={field.placeholder} />
+                </div>
+              ))}
+            </div>
+            <motion.button whileTap={{ scale:0.95 }} onClick={() => onSubmit(formData)}
+              className="w-full mt-8 py-4 rounded-2xl text-white font-black text-base shadow-lg mb-8"
+              style={{ background:C.teal, boxShadow:`0 8px 24px ${C.teal}40`, fontFamily:F.head }}>
+              Save Changes
+            </motion.button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+const ManagerProfile = ({ onLogout, currentUser, onEditClick }) => {
+  const getCompletion = () => {
+    if (!currentUser) return 0;
+    const required = [
+      currentUser.full_name,
+      currentUser.mobile_number,
+      currentUser.job_title,
+      currentUser.hospital,
+      currentUser.area,
+      currentUser.facilities,
+      currentUser.certifications
+    ];
+    const filled = required.filter(f => f && f.trim() !== "").length;
+    return Math.round((filled / required.length) * 100);
+  };
+  
+  const completion = getCompletion();
+  const radius = 38; 
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (completion / 100) * circumference;
+
+  return (
+    <div className="flex-1 overflow-y-auto pb-28" style={{ scrollbarWidth:"none" }}>
+      <div className="relative h-44" style={{ background:`linear-gradient(135deg, ${C.blue}, #0F2744)` }}>
+        <svg viewBox="0 0 430 176" className="absolute inset-0 w-full h-full opacity-20">
+          <circle cx="350" cy="40"  r="70"  fill={C.teal}/>
+          <circle cx="80"  cy="140" r="50"  fill={C.amber}/>
+          <circle cx="220" cy="88"  r="90"  fill="rgba(255,255,255,0.05)"/>
+        </svg>
+        
+        <button onClick={onEditClick} className="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white active:scale-95 transition-transform" style={{ boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
+          <Edit2 size={16} />
+        </button>
+
+        <div className="absolute bottom-0 left-5 translate-y-1/2 w-24 h-24">
+          <svg className="absolute inset-0 w-full h-full -rotate-90 transform" viewBox="0 0 88 88">
+            <circle cx="44" cy="44" r={radius} fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="6" />
+            <circle cx="44" cy="44" r={radius} fill="none" stroke={C.teal} strokeWidth="6"
+              strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" 
+              style={{ transition: "stroke-dashoffset 1s ease-in-out" }} />
+          </svg>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[84px] h-[84px] rounded-full border-4 border-white flex items-center justify-center font-black text-3xl text-white shadow-xl"
+            style={{ background:`linear-gradient(135deg, ${C.teal}, #0F766E)` }}>
+            {currentUser?.full_name ? currentUser.full_name.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2) : "..."}
+          </div>
         </div>
-        <h1 className="font-black text-2xl text-white" style={{ fontFamily:F.head }}>
-          {TECHNICIAN.fullName}
+      </div>
+      
+      <div className="px-5 pt-16 pb-5">
+        {completion < 100 && (
+          <div className="mb-6 p-4 rounded-2xl flex items-center justify-between shadow-sm" style={{ background: `${C.amber}10`, border: `1px solid ${C.amber}30` }}>
+            <div>
+              <h3 className="font-black text-sm" style={{ color: "#d97706", fontFamily: F.head }}>Finish Your Profile</h3>
+              <p className="text-xs text-amber-700/70 font-medium">It's {completion}% complete.</p>
+            </div>
+            <button onClick={onEditClick} className="px-4 py-2 rounded-xl text-xs font-bold text-white shadow" style={{ background: C.amber, fontFamily: F.head }}>
+              Complete Now
+            </button>
+          </div>
+        )}
+        <div className="flex items-start justify-between mb-1">
+          <div>
+            <h1 className="font-black text-2xl" style={{ color:C.blue, fontFamily:F.head }}>
+              {currentUser?.full_name || "Loading..."}
+            </h1>
+            <p className="text-sm text-slate-400">{currentUser?.job_title || (currentUser?.role === "manager" ? "Hospital Manager" : "...")}</p>
+          </div>
+          <span className="flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full mt-1"
+            style={{ background:`${C.teal}10`, color:C.teal }}>
+            <BadgeCheck size={11}/> Verified
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5 text-sm text-slate-500 mt-2 mb-4">
+          <Building2 size={14} color="#94A3B8"/>{currentUser?.hospital || "Hospital"}
+          <span className="text-slate-300">·</span>
+          <MapPin size={14} color="#94A3B8"/>{currentUser?.area || ""}
+        </div>
+        {[
+          { label:"Hospital", value: currentUser?.hospital || "Hospital" },
+          { label:"Location", value: currentUser?.area || "Not provided" },
+          { label:"Facilities", value: currentUser?.facilities || "Not provided" },
+          { label:"Certifications", value: currentUser?.certifications || "None" },
+        ].map(({ label, value }) => (
+          <div key={label} className="flex justify-between py-3"
+            style={{ borderBottom:"1px solid #F1F5F9" }}>
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wide"
+              style={{ fontFamily:F.mono }}>{label}</span>
+            <span className="text-sm font-semibold text-right max-w-[60%]" style={{ color:C.blue }}>{value}</span>
+          </div>
+        ))}
+        <motion.button
+          whileTap={{ scale: 0.95 }}
+          onClick={onLogout}
+          className="w-full mt-6 flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm"
+          style={{ background: "#FEF2F2", color: "#EF4444", border: "1px solid #FECACA" }}>
+          <LogOut size={16} /> Log Out
+        </motion.button>
+      </div>
+    </div>
+  );
+};
+
+const EditTechProfileSheet = ({ open, onClose, currentUser, onSubmit }) => {
+  const [indianStates, setIndianStates] = useState([]);
+  const [formData, setFormData] = useState({
+    fullName: currentUser?.full_name || "",
+    mobile: currentUser?.mobile_number || "",
+    bio: currentUser?.bio || "",
+    specialty: currentUser?.specialty || "",
+    machineSkills: currentUser?.machine_skills || "",
+    certifications: currentUser?.certifications_list || "",
+    experience: currentUser?.experience_years != null ? currentUser.experience_years.toString() : "",
+    country: currentUser?.country || "",
+    state: currentUser?.state || "",
+    district: currentUser?.district || "",
+    city: currentUser?.city || "",
+    address: currentUser?.home_address || ""
+  });
+
+  useEffect(() => {
+    if (open && indianStates.length === 0) {
+      fetch(`${API_BASE}/api/states`)
+        .then(r => r.json())
+        .then(d => { if(d.states) setIndianStates(d.states); })
+        .catch(e => console.error("Failed fetching states", e));
+    }
+  }, [open, indianStates.length]);
+
+  useEffect(() => {
+    if (open) {
+      setFormData({
+        fullName: currentUser?.full_name || "",
+        mobile: currentUser?.mobile_number || "",
+        bio: currentUser?.bio || "",
+        specialty: currentUser?.specialty || "",
+        machineSkills: currentUser?.machine_skills || "",
+        certifications: currentUser?.certifications_list || "",
+        experience: currentUser?.experience_years != null ? currentUser.experience_years.toString() : "",
+        country: currentUser?.country || "",
+        state: currentUser?.state || "",
+        district: currentUser?.district || "",
+        city: currentUser?.city || "",
+        address: currentUser?.home_address || ""
+      });
+    }
+  }, [open, currentUser]);
+
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div initial={{ opacity:0, y:"100%" }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:"100%" }}
+          transition={{ type:"spring", damping:25, stiffness:300 }}
+          className="fixed inset-0 z-[99999] flex flex-col" style={{ background:C.pearl, fontFamily:F.head }}>
+          <div className="flex items-center justify-between px-5 py-4 bg-white/80 backdrop-blur-md relative z-10" style={{ borderBottom:"1px solid #F1F5F9" }}>
+            <h2 className="text-xl font-black" style={{ color:C.blue }}>Edit Profile</h2>
+            <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-2xl bg-white shadow-sm text-slate-400 active:scale-95 transition-transform">
+              <X size={20} />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto px-5 py-6">
+            
+            <h3 className="text-xs font-black text-teal-600 uppercase tracking-widest mb-3">Basic Info</h3>
+            <div className="flex flex-col gap-4 mb-6">
+              {[
+                { label: "Full Name", name: "fullName", placeholder: "e.g. Sarah Connor" },
+                { label: "Mobile Number", name: "mobile", placeholder: "+91 99999 99999" },
+              ].map(field => (
+                <div key={field.name}>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide ml-1">{field.label}</label>
+                  <input type="text" name={field.name} value={formData[field.name]} onChange={handleChange}
+                    className="w-full mt-1 px-4 py-3 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-teal-500/30 transition-all"
+                    style={{ background:"#fff", border:"1px solid #E2E8F0", color:C.blue }} placeholder={field.placeholder} />
+                </div>
+              ))}
+            </div>
+
+            <h3 className="text-xs font-black text-teal-600 uppercase tracking-widest mb-3">Professional</h3>
+            <div className="flex flex-col gap-4 mb-6">
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide ml-1">Bio / Description</label>
+                <textarea name="bio" value={formData.bio} onChange={handleChange} rows="3"
+                  className="w-full mt-1 px-4 py-3 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-teal-500/30 transition-all resize-none"
+                  style={{ background:"#fff", border:"1px solid #E2E8F0", color:C.blue }} placeholder="Describe your experience and goals..." />
+              </div>
+              {[
+                { label: "Specialty", name: "specialty", placeholder: "e.g., Radiology" },
+                { label: "Specific Machine Skills", name: "machineSkills", placeholder: "e.g., GE MRI, Siemens CT" },
+                { label: "Certifications", name: "certifications", placeholder: "e.g., BLS, ARRT" },
+              ].map(field => (
+                <div key={field.name}>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide ml-1">{field.label}</label>
+                  <input type="text" name={field.name} value={formData[field.name]} onChange={handleChange}
+                    className="w-full mt-1 px-4 py-3 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-teal-500/30 transition-all"
+                    style={{ background:"#fff", border:"1px solid #E2E8F0", color:C.blue }} placeholder={field.placeholder} />
+                </div>
+              ))}
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide ml-1">Experience (Years)</label>
+                <input type="number" name="experience" value={formData.experience} onChange={handleChange}
+                  className="w-full mt-1 px-4 py-3 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-teal-500/30 transition-all"
+                  style={{ background:"#fff", border:"1px solid #E2E8F0", color:C.blue }} placeholder="e.g., 5" />
+              </div>
+            </div>
+
+            <h3 className="text-xs font-black text-teal-600 uppercase tracking-widest mb-3">Location</h3>
+            <div className="flex flex-col gap-4 mb-6">
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide ml-1">Country</label>
+                <input type="text" disabled value="India"
+                  className="w-full mt-1 px-4 py-3 rounded-xl text-sm font-semibold outline-none transition-all cursor-not-allowed"
+                  style={{ background:"#F8FAFC", border:"1px solid #E2E8F0", color:"#94A3B8" }} />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide ml-1">State</label>
+                <select name="state" value={formData.state} onChange={handleChange}
+                  className="w-full mt-1 px-4 py-3 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-teal-500/30 transition-all appearance-none bg-white"
+                  style={{ border:"1px solid #E2E8F0", color:C.blue }}>
+                  <option value="" disabled>Select a State</option>
+                  {indianStates.map(st => (
+                    <option key={st} value={st}>{st}</option>
+                  ))}
+                </select>
+              </div>
+              {[
+                { label: "District", name: "district", placeholder: "e.g., Pune" },
+                { label: "City", name: "city", placeholder: "e.g., Pune" },
+              ].map(field => (
+                <div key={field.name}>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide ml-1">{field.label}</label>
+                  <input type="text" name={field.name} value={formData[field.name]} onChange={handleChange}
+                    className="w-full mt-1 px-4 py-3 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-teal-500/30 transition-all"
+                    style={{ background:"#fff", border:"1px solid #E2E8F0", color:C.blue }} placeholder={field.placeholder} />
+                </div>
+              ))}
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wide ml-1">Home Address</label>
+                <textarea name="address" value={formData.address} onChange={handleChange} rows="2"
+                  className="w-full mt-1 px-4 py-3 rounded-xl text-sm font-semibold outline-none focus:ring-2 focus:ring-teal-500/30 transition-all resize-none"
+                  style={{ background:"#fff", border:"1px solid #E2E8F0", color:C.blue }} placeholder="Full address..." />
+              </div>
+            </div>
+
+            <motion.button whileTap={{ scale:0.95 }} onClick={() => onSubmit(formData)}
+              className="w-full mt-2 py-4 rounded-2xl text-white font-black text-base shadow-lg mb-8"
+              style={{ background:C.teal, boxShadow:`0 8px 24px ${C.teal}40`, fontFamily:F.head }}>
+              Save Profile
+            </motion.button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
+const TechProfile = ({ onLogout, isGuest, onRequireAuth, currentUser, onEditClick }) => {
+  if (isGuest) {
+    return (
+      <div className="flex-1 overflow-y-auto pb-28 px-5 pt-16 flex flex-col items-center" style={{ scrollbarWidth:"none" }}>
+        <div className="w-24 h-24 rounded-3xl flex items-center justify-center shadow-xl mb-6 border-4"
+          style={{ background: `linear-gradient(135deg, ${C.teal}, #0F766E)`, borderColor: "rgba(255,255,255,0.4)" }}>
+          <User size={40} color="white" strokeWidth={2.5}/>
+        </div>
+        <h1 className="text-2xl font-black text-center mb-3" style={{ color: C.blue, fontFamily: F.head }}>
+          Your MedShift Profile
         </h1>
-        <p className="text-white/65 text-sm text-center mt-0.5 px-6">{TECHNICIAN.subtitle}</p>
+        <p className="text-center text-sm font-medium mb-10 px-4 leading-relaxed text-slate-500">
+          Track earnings, accept shifts instantly, and build your reputation. Register for free to unlock all features.
+        </p>
+        <motion.button whileTap={{ scale: 0.95 }} onClick={() => onRequireAuth("register")}
+          className="w-full py-4 rounded-2xl text-white font-black text-base shadow-lg mb-4"
+          style={{ background: C.teal, boxShadow: `0 8px 24px ${C.teal}40`, fontFamily: F.head }}>
+          Register as Technician
+        </motion.button>
+        <motion.button whileTap={{ scale: 0.95 }} onClick={() => onRequireAuth("login")}
+          className="w-full py-4 rounded-2xl font-bold text-sm transition-colors hover:bg-slate-100"
+          style={{ background: `${C.blue}0A`, color: C.blue, fontFamily: F.head }}>
+          Log In
+        </motion.button>
+      </div>
+    );
+  }
+
+  const getInitials = () => {
+    if (!currentUser?.full_name) return "GT";
+    const parts = currentUser.full_name.split(' ');
+    if (parts.length > 1) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return parts[0].substring(0, 2).toUpperCase();
+  };
+
+  const getCompletion = () => {
+    if (!currentUser) return 0;
+    const required = [
+      currentUser.full_name,
+      currentUser.mobile_number,
+      currentUser.specialty,
+      currentUser.machine_skills,
+      currentUser.experience_years,
+      currentUser.city,
+      currentUser.state
+    ];
+    const filled = required.filter(f => f != null && f.toString().trim() !== "").length;
+    return Math.round((filled / required.length) * 100);
+  };
+  
+  const completion = getCompletion();
+  const radius = 54; 
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (completion / 100) * circumference;
+
+  return (
+  <div className="flex-1 overflow-y-auto pb-28" style={{ scrollbarWidth:"none" }}>
+    <div className="px-5 pt-5 pb-6 relative"
+      style={{ background:`linear-gradient(160deg, ${C.blue}, #0F2744)` }}>
+      
+      <button onClick={onEditClick} className="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white active:scale-95 transition-transform" style={{ zIndex: 10, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
+        <Edit2 size={16} />
+      </button>
+
+      <div className="flex flex-col items-center relative mt-4">
+        <div className="relative w-32 h-32 mb-3">
+          <svg className="absolute inset-0 w-full h-full -rotate-90 transform" viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r={radius} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="6" />
+            <circle cx="60" cy="60" r={radius} fill="none" stroke={C.teal} strokeWidth="6"
+              strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" 
+              style={{ transition: "stroke-dashoffset 1s ease-in-out" }} />
+          </svg>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100px] h-[100px] rounded-3xl border-4 flex items-center justify-center font-black text-4xl text-white shadow-2xl"
+            style={{ background:`linear-gradient(135deg, ${C.teal}, #0F766E)`, borderColor:"rgba(255,255,255,0.2)" }}>
+            {getInitials()}
+          </div>
+        </div>
+
+        <h1 className="font-black text-2xl text-white" style={{ fontFamily:F.head }}>
+          {currentUser?.full_name || "Loading..."}
+        </h1>
+        <p className="text-white/65 text-sm text-center mt-0.5 px-6">
+          {currentUser?.specialty || "Certified Medical Professional"}
+        </p>
         <div className="flex items-center gap-3 mt-3">
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
             style={{ background:"rgba(255,255,255,0.12)" }}>
             <Star size={12} fill="#F59E0B" color="#F59E0B"/>
-            <span className="text-white font-black text-sm">{TECHNICIAN.rating} / 5.0</span>
+            <span className="text-white font-black text-sm">{currentUser?.rating || "New"} / 5.0</span>
           </div>
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
             style={{ background:"rgba(255,255,255,0.12)" }}>
             <Hash size={12} color="rgba(255,255,255,0.7)"/>
-            <span className="text-white font-black text-sm">{TECHNICIAN.totalShifts} shifts</span>
+            <span className="text-white font-black text-sm">{currentUser?.total_shifts || 0} shifts</span>
           </div>
         </div>
       </div>
     </div>
-    <div className="px-5 pt-5">
+    
+    <div className="px-5 pt-6">
+      {completion < 100 && (
+        <div className="mb-6 p-4 rounded-2xl flex items-center justify-between shadow-sm" style={{ background: `${C.amber}10`, border: `1px solid ${C.amber}30` }}>
+          <div>
+            <h3 className="font-black text-sm" style={{ color: "#d97706", fontFamily: F.head }}>Profile Incomplete</h3>
+            <p className="text-xs text-amber-700/70 font-medium">Complete to get hired faster ({completion}%).</p>
+          </div>
+          <button onClick={onEditClick} className="px-4 py-2 rounded-xl text-xs font-bold text-white shadow min-w-[max-content]" style={{ background: C.amber, fontFamily: F.head }}>
+            Finish Now
+          </button>
+        </div>
+      )}
+
       {[
-        { label:"Location",  value:TECHNICIAN.location },
-        { label:"Specialty", value:"MRI, X-Ray, CT Scan" },
-        { label:"Wallet",    value:"₹12,450 balance" },
+        { label:"Location",  value: (currentUser?.city && currentUser?.state) ? `${currentUser.city}, ${currentUser.state}` : (currentUser?.city || "Not provided") },
+        { label:"Experience", value: currentUser?.experience_years ? `${currentUser.experience_years} Years` : "Not provided" },
+        { label:"Machine Skills", value: currentUser?.machine_skills || "Not provided" },
         { label:"Status",    value:"Available Now ✓" },
       ].map(({ label, value }) => (
         <div key={label} className="flex justify-between py-3"
           style={{ borderBottom:"1px solid #F1F5F9" }}>
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wide"
             style={{ fontFamily:F.mono }}>{label}</span>
-          <span className="text-sm font-semibold" style={{ color:C.blue }}>{value}</span>
+          <span className="text-sm font-semibold text-right max-w-[65%]" style={{ color:C.blue }}>{value}</span>
         </div>
       ))}
+      <motion.button
+        whileTap={{ scale: 0.95 }}
+        onClick={onLogout}
+        className="w-full mt-6 flex items-center justify-center gap-2 py-3.5 rounded-2xl font-bold text-sm"
+        style={{ background: "#FEF2F2", color: "#EF4444", border: "1px solid #FECACA" }}>
+        <LogOut size={16} /> Log Out
+      </motion.button>
     </div>
   </div>
-);
+  );
+};
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // PHASE 15 — COMMUNITY FEED
@@ -1144,7 +1508,7 @@ const MRIMachineIllustration = () => (
   </svg>
 );
 
-const FeedPost = ({ post }) => {
+const FeedPost = ({ post, onAuthorClick }) => {
   const [liked,    setLiked]    = useState(post.liked || false);
   const [saved,    setSaved]    = useState(false);
   const [likeCount,setLikeCount]= useState(post.likes || 0);
@@ -1206,23 +1570,23 @@ const FeedPost = ({ post }) => {
           {post.initials}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
-            <p className="font-bold text-sm truncate" style={{ color:C.blue, fontFamily:F.head }}>
+          <div className="flex items-center gap-1.5 cursor-pointer active:opacity-70" onClick={() => onAuthorClick?.(post.author)}>
+            <p className="font-bold text-sm truncate text-slate-800 dark:text-slate-200" style={{ fontFamily:F.head }}>
               {post.author}
             </p>
             {post.verified && <BadgeCheck size={13} color={C.teal}/>}
           </div>
-          <p className="text-xs text-slate-400 truncate">{post.role}</p>
-          <p className="text-[10px] text-slate-300">{post.time}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{post.role}</p>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400">{post.time}</p>
         </div>
-        <button className="w-8 h-8 rounded-xl flex items-center justify-center"
+        <button className="w-8 h-8 rounded-xl flex items-center justify-center dark:bg-slate-700"
           style={{ background:"#F8FAFC" }}>
-          <MoreHorizontal size={15} color="#94A3B8"/>
+          <MoreHorizontal size={15} color="#94A3B8" className="dark:text-slate-400"/>
         </button>
       </div>
 
       {/* Body text */}
-      <p className="px-4 pb-3 text-sm text-slate-600 leading-relaxed">{post.body}</p>
+      <p className="px-4 pb-3 text-base text-slate-800 dark:text-slate-200 leading-relaxed">{post.body}</p>
 
       {/* Image if any */}
       {post.hasImage && post.imageType === "mri" && (
@@ -1246,18 +1610,18 @@ const FeedPost = ({ post }) => {
                 fill={liked ? C.teal : "none"}
                 strokeWidth={liked ? 2.5 : 1.8}/>
             </motion.div>
-            <span className="text-xs font-semibold"
+            <span className="text-xs font-semibold dark:text-slate-300"
               style={{ color: liked ? C.teal : "#94A3B8" }}>{likeCount}</span>
           </motion.button>
 
           <button className="flex items-center gap-1.5">
             <MessageCircle size={17} color="#94A3B8" strokeWidth={1.8}/>
-            <span className="text-xs font-semibold text-slate-400">{post.comments}</span>
+            <span className="text-xs font-semibold text-slate-400 dark:text-slate-300">{post.comments}</span>
           </button>
 
           <button className="flex items-center gap-1.5">
             <Send size={16} color="#94A3B8" strokeWidth={1.8}/>
-            <span className="text-xs font-semibold text-slate-400">{post.shares}</span>
+            <span className="text-xs font-semibold text-slate-400 dark:text-slate-300">{post.shares}</span>
           </button>
         </div>
 
@@ -1272,7 +1636,7 @@ const FeedPost = ({ post }) => {
   );
 };
 
-const CommunityFeed = ({ posts }) => (
+const CommunityFeed = ({ posts, onAuthorClick }) => (
   <div className="flex-1 overflow-y-auto pb-28 px-4 pt-4" style={{ scrollbarWidth:"none" }}>
     {/* Search */}
     <div className="flex items-center gap-2 mb-4">
@@ -1307,7 +1671,7 @@ const CommunityFeed = ({ posts }) => (
         initial={{ opacity:0, y:24 }}
         animate={{ opacity:1, y:0 }}
         transition={{ delay: i * 0.12 }}>
-        <FeedPost post={post}/>
+        <FeedPost post={post} onAuthorClick={onAuthorClick} />
       </motion.div>
     ))}
   </div>
@@ -1316,26 +1680,64 @@ const CommunityFeed = ({ posts }) => (
 // ═══════════════════════════════════════════════════════════════════════════════
 // SHIFTS TAB (shared)
 // ═══════════════════════════════════════════════════════════════════════════════
-const ShiftsTab = ({ role, managerShifts, techShifts }) => {
-  const shifts = role === "manager" ? managerShifts : techShifts;
+const ShiftsTab = ({ role, managerShifts, techShifts, isGuest, onRequireAuth, currentUser }) => {
+  const [activeFilter, setActiveFilter] = useState("Active/Upcoming");
+
+  if (role === "technician" && isGuest) {
+    return (
+      <div className="flex-1 overflow-y-auto pb-28 px-5 pt-16 flex flex-col items-center" style={{ scrollbarWidth:"none" }}>
+        <div className="w-20 h-20 rounded-3xl flex items-center justify-center mb-6"
+          style={{ background: `${C.blue}10` }}>
+          <Calendar size={32} color={C.blue}/>
+        </div>
+        <h1 className="text-xl font-black text-center mb-3" style={{ color: C.blue, fontFamily: F.head }}>
+          Manage Your Schedule
+        </h1>
+        <p className="text-center text-sm font-medium mb-10 px-2 text-slate-500">
+          Log in to view your applied, upcoming, and completed shifts.
+        </p>
+        <motion.button whileTap={{ scale: 0.95 }} onClick={onRequireAuth}
+          className="w-full py-4 rounded-2xl font-black text-base text-white shadow-lg mb-4"
+          style={{ background: C.blue, boxShadow: `0 8px 24px ${C.blue}40`, fontFamily: F.head }}>
+          Log In to View Shifts
+        </motion.button>
+      </div>
+    );
+  }
+
+  const baseShifts = role === "manager" ? managerShifts : techShifts;
+  const shifts = baseShifts.filter(s => {
+      const st = s.status?.toLowerCase();
+      if (activeFilter === "Active/Upcoming") return ["open", "searching", "filled", "matched"].includes(st);
+      if (activeFilter === "Completed") return st === "completed";
+      if (activeFilter === "Cancelled") return st === "cancelled";
+      return true;
+  });
+
   return (
     <div className="flex-1 overflow-y-auto pb-28 px-5 pt-5" style={{ scrollbarWidth:"none" }}>
       <h1 className="font-black text-2xl mb-1" style={{ color:C.blue, fontFamily:F.head }}>
         {role === "manager" ? "Posted Shifts" : "My Shifts"}
       </h1>
       <p className="text-sm text-slate-400 mb-5">
-        {role === "manager" ? MANAGER.hospital : "Upcoming & past work"}
+        {role === "manager" ? (currentUser?.hospital || "Hospital") : "Upcoming & past work"}
       </p>
       <div className="flex gap-2 mb-5 overflow-x-auto" style={{ scrollbarWidth:"none" }}>
-        {["Active","Upcoming","Completed","Cancelled"].map((t, i) => (
+        {["Active/Upcoming","Completed","Cancelled"].map((t) => (
           <button key={t}
-            className="px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap flex-shrink-0"
-            style={{ background: i===0 ? C.blue : "#F1F5F9",
-              color: i===0 ? "white" : "#94A3B8", fontFamily:F.head }}>
+            onClick={() => setActiveFilter(t)}
+            className="px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap flex-shrink-0 transition-colors"
+            style={{ background: activeFilter === t ? C.blue : "#F1F5F9",
+              color: activeFilter === t ? "white" : "#94A3B8", fontFamily:F.head }}>
             {t}
           </button>
         ))}
       </div>
+      {shifts.length === 0 && (
+        <div className="text-center mt-12">
+          <p className="text-sm text-slate-400 font-medium tracking-wide">No shifts found</p>
+        </div>
+      )}
       {shifts.map((s, i) => {
         const Icon = s.icon || ScanLine;
         return (
@@ -1364,6 +1766,178 @@ const ShiftsTab = ({ role, managerShifts, techShifts }) => {
         );
       })}
     </div>
+  );
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TECHNICIAN AUTH SCREEN (GUEST MODE)
+// ═══════════════════════════════════════════════════════════════════════════════
+const TechAuthScreen = ({ onClose, onSuccess, initialMode = "login" }) => {
+  const [isRegistering, setIsRegistering] = useState(initialMode === "register");
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    setIsRegistering(initialMode === "register");
+  }, [initialMode]);
+  
+  // Dummy form state
+  const [formData, setFormData] = useState({
+    fullName: "", mobile: "", email: "", password: "", idFile: null, certificateFile: null
+  });
+
+  const handleRegisterSubmit = async () => {
+    if (!formData.email || !formData.password || !formData.fullName || !formData.mobile) {
+      alert("Please fill in all required fields.");
+      return;
+    }
+    
+    try {
+      setIsLoading(true);
+      const res = await fetch(`${API_BASE}/api/auth/register/technician`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          full_name: formData.fullName,
+          mobile_number: formData.mobile,
+          email: formData.email,
+          password: formData.password
+        })
+      });
+      
+      const data = await res.json();
+      if (res.ok) {
+        onSuccess(data);
+      } else {
+        alert(data.detail || "Registration failed. Please try again.");
+      }
+    } catch (err) {
+      alert("Network error: Could not reach the server.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLoginSubmit = async () => {
+    if (!formData.email || !formData.password) {
+      alert("Please fill in both Email and Password.");
+      return;
+    }
+    
+    try {
+      setIsLoading(true);
+      const res = await fetch(`${API_BASE}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          role: "technician"
+        })
+      });
+      
+      const data = await res.json();
+      if (res.ok) {
+        onSuccess(data.user);
+      } else {
+        alert(data.detail || "Invalid Email or Password. Please try again.");
+      }
+    } catch (err) {
+      alert("Network error: Could not reach the server.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: "100%" }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: "100%" }}
+      transition={{ type: "spring", damping: 25, stiffness: 300 }}
+      className="fixed inset-0 z-[999999] flex flex-col"
+      style={{ fontFamily: F.head, background: C.pearl }}
+    >
+      <div className="flex items-center justify-between px-5 py-4 bg-white/80 backdrop-blur-md relative z-10" style={{ borderBottom: "1px solid #F1F5F9" }}>
+        <h2 className="text-xl font-black" style={{ color: C.blue }}>
+          {isRegistering ? "Apply to Join" : "Welcome Back"}
+        </h2>
+        <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-2xl bg-white shadow-sm text-slate-400 active:scale-95 transition-transform">
+          <X size={20} />
+        </button>
+      </div>
+
+      <div className="flex-1 p-6 overflow-y-auto w-full relative" style={{ scrollbarWidth: "none" }}>
+        <div className="max-w-md mx-auto flex flex-col items-center">
+            
+          {!isRegistering && (
+             <div className="w-20 h-20 rounded-3xl flex items-center justify-center shadow-2xl mb-8 mt-4"
+                style={{ background: `linear-gradient(135deg, ${C.teal}, #0F766E)` }}>
+                <Shield size={36} color="white" strokeWidth={2.5}/>
+             </div>
+          )}
+
+          <h1 className="text-2xl font-black text-center mb-2" style={{ color: C.blue, marginTop: isRegistering ? "1rem" : "0" }}>
+            {isRegistering ? "Apply to Join MedShift" : "Join MedShift to Accept Shifts"}
+          </h1>
+          <p className="text-center text-slate-500 text-sm mb-8 px-2 leading-relaxed">
+            {isRegistering 
+              ? "Submit your credentials. Our verification team will review your application within 24 hours." 
+              : "Get verified, find high-paying local shifts, and manage your schedule effortlessly."}
+          </p>
+
+          <div className="w-full flex flex-col gap-4 mb-8">
+            {isRegistering && (
+              <>
+                <input type="text" placeholder="Full Legal Name" value={formData.fullName} onChange={e => setFormData({...formData, fullName: e.target.value})}
+                  className="w-full px-5 py-4 rounded-2xl border-2 border-slate-100 outline-none focus:border-teal-500 transition-colors font-semibold text-slate-800" />
+                <input type="tel" placeholder="Mobile Number" value={formData.mobile} onChange={e => setFormData({...formData, mobile: e.target.value})}
+                  className="w-full px-5 py-4 rounded-2xl border-2 border-slate-100 outline-none focus:border-teal-500 transition-colors font-semibold text-slate-800" />
+              </>
+            )}
+            
+            <input type="email" placeholder="Email Address" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}
+              className="w-full px-5 py-4 rounded-2xl border-2 border-slate-100 outline-none focus:border-teal-500 transition-colors font-semibold text-slate-800" />
+            <input type="password" placeholder="Password" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})}
+              className="w-full px-5 py-4 rounded-2xl border-2 border-slate-100 outline-none focus:border-teal-500 transition-colors font-semibold text-slate-800" />
+
+            {isRegistering && (
+              <div className="flex flex-col gap-3 mt-2">
+                <div className="w-full border-2 border-dashed border-slate-300 bg-white rounded-2xl p-5 flex flex-col items-center justify-center cursor-pointer hover:border-teal-400 hover:bg-teal-50 transition-colors shadow-sm">
+                  <UploadCloud size={28} color={C.teal} className="mb-2"/>
+                  <span className="font-bold text-sm" style={{ color: C.blue }}>Upload Government ID (Aadhar/PAN)</span>
+                  <span className="text-xs text-slate-400 mt-1">Images only (JPG, PNG)</span>
+                </div>
+                
+                <div className="w-full border-2 border-dashed border-slate-300 bg-white rounded-2xl p-5 flex flex-col items-center justify-center cursor-pointer hover:border-teal-400 hover:bg-teal-50 transition-colors shadow-sm">
+                  <FileBadge size={28} color={C.teal} className="mb-2"/>
+                  <span className="font-bold text-sm" style={{ color: C.blue }}>Upload Course Certificate</span>
+                  <span className="text-xs text-slate-400 mt-1">Images or PDFs (Max 5MB)</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <motion.button whileTap={{ scale: 0.95 }} 
+            onClick={isRegistering ? handleRegisterSubmit : handleLoginSubmit}
+            disabled={isLoading}
+            className="w-full py-4 rounded-2xl text-white font-black text-base shadow-lg mb-6 flex items-center justify-center gap-2"
+            style={{ 
+              background: `linear-gradient(135deg, ${C.teal}, #0F766E)`, 
+              boxShadow: `0 8px 24px ${C.teal}40`,
+              opacity: isLoading ? 0.7 : 1
+            }}>
+            {isRegistering ? (isLoading ? "Submitting..." : "Submit Application") : (isLoading ? "Authenticating..." : "Log In")}
+          </motion.button>
+
+          <p className="text-center text-sm font-bold text-slate-500 hover:text-slate-800 cursor-pointer transition-colors"
+             onClick={() => setIsRegistering(!isRegistering)}>
+            {isRegistering ? "Already have an account? Log In" : "New to MedShift? Apply as a Technician"}
+          </p>
+          
+          {isRegistering && <div className="h-10 w-full flex-shrink-0" />}
+        </div>
+      </div>
+    </motion.div>
   );
 };
 
@@ -1405,7 +1979,7 @@ const DemoLoginScreen = ({ onLogin }) => (
         <motion.button 
           whileTap={{ scale: 0.95 }}
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-          onClick={() => onLogin("manager")}
+          onClick={() => window.location.hash = "#phase16"}
           className="w-full rounded-[1.25rem] p-5 text-left relative overflow-hidden border border-white/10"
           style={{ background: `linear-gradient(135deg, ${C.blue}, #0F2744)`, boxShadow: `0 12px 32px ${C.blue}40` }}>
           <div className="absolute right-0 top-0 bottom-0 w-24 opacity-10 bg-gradient-to-l from-white to-transparent pointer-events-none"/>
@@ -1424,7 +1998,10 @@ const DemoLoginScreen = ({ onLogin }) => (
         <motion.button 
           whileTap={{ scale: 0.95 }}
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-          onClick={() => onLogin("technician")}
+          onClick={() => {
+            localStorage.setItem('medshift_role', 'technician');
+            onLogin("technician", true); // Pass 'true' for isGuest
+          }}
           className="w-full rounded-[1.25rem] p-5 text-left relative overflow-hidden border border-white/10 mt-1"
           style={{ background: `linear-gradient(135deg, ${C.teal}, #0B736A)`, boxShadow: `0 12px 32px ${C.teal}40` }}>
           <div className="absolute right-0 top-0 bottom-0 w-24 opacity-10 bg-gradient-to-l from-white to-transparent pointer-events-none"/>
@@ -1620,7 +2197,7 @@ const CreateShiftSheet = ({ open, onClose, onSubmit }) => {
 // ═══════════════════════════════════════════════════════════════════════════════
 // CREATE POST BOTTOM SHEET
 // ═══════════════════════════════════════════════════════════════════════════════
-const CreatePostSheet = ({ open, onClose, onSubmit }) => {
+const CreatePostSheet = ({ open, onClose, onSubmit, currentUser }) => {
   const [text, setText] = useState("");
 
   const handleSubmit = () => {
@@ -1659,13 +2236,13 @@ const CreatePostSheet = ({ open, onClose, onSubmit }) => {
               <div className="flex items-center gap-3 mb-5">
                 <div className="w-10 h-10 rounded-2xl flex items-center justify-center font-black text-white text-sm"
                   style={{ background:`linear-gradient(135deg, ${C.blue}, #0F2744)` }}>
-                  {MANAGER.initials}
+                  {currentUser?.full_name ? currentUser.full_name.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2) : "U"}
                 </div>
                 <div>
                   <p className="font-bold text-sm leading-tight" style={{ color:C.blue, fontFamily:F.head }}>
-                    {MANAGER.name}
+                    {currentUser?.full_name || "Unknown User"}
                   </p>
-                  <p className="text-xs text-slate-400 mt-0.5">{MANAGER.role}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{currentUser?.role === "manager" ? "Hospital Manager" : "Medical Technician"}</p>
                 </div>
               </div>
               <textarea
@@ -1703,8 +2280,121 @@ const CreatePostSheet = ({ open, onClose, onSubmit }) => {
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function MedShiftFull() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isGuest, setIsGuest] = useState(false);
+  const [showTechAuth, setShowTechAuth] = useState(false);
+  const [editProfileOpen, setEditProfileOpen] = useState(false);
+  const [editTechProfileOpen, setEditTechProfileOpen] = useState(false);
+  const [techAuthMode, setTechAuthMode] = useState("login");
   const [isDark, setIsDark] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  const handleRequireAuth = (mode = "login") => {
+    setTechAuthMode(mode);
+    setShowTechAuth(true);
+  };
+
+  const handleUpdateTechProfile = async (formData) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/technician/profile`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          full_name: formData.fullName,
+          mobile_number: formData.mobile,
+          bio: formData.bio,
+          specialty: formData.specialty,
+          machine_skills: formData.machineSkills,
+          certifications_list: formData.certifications,
+          experience_years: formData.experience ? parseInt(formData.experience) : null,
+          country: formData.country,
+          state: formData.state,
+          district: formData.district,
+          city: formData.city,
+          home_address: formData.address
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const updatedUser = {
+          ...currentUser,
+          ...data.profile,
+        };
+        setCurrentUser(updatedUser);
+        localStorage.setItem("medshift_user", JSON.stringify(updatedUser));
+        setEditTechProfileOpen(false);
+      } else {
+        alert("Failed to update profile.");
+      }
+    } catch (e) {
+      console.error("Update error:", e);
+      alert("Network error updating profile.");
+    }
+  };
+
+  const handleUpdateManagerProfile = async (formData) => {
+    try {
+      const res = await fetch(`${API_BASE}/api/dashboard/manager/profile?manager_id=${currentUser.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          full_name: formData.fullName,
+          mobile_number: formData.mobile,
+          job_title: formData.role,
+          hospital_name: formData.hospitalName,
+          hospital_address: formData.hospitalLocation,
+          facilities: formData.facilities,
+          certifications: formData.certifications
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const updatedUser = {
+          ...currentUser,
+          full_name: data.profile.name,
+          hospital: data.profile.hospital_name,
+          area: data.profile.hospital_area,
+          job_title: data.profile.role,
+          mobile_number: formData.mobile,
+          facilities: formData.facilities,
+          certifications: formData.certifications
+        };
+        setCurrentUser(updatedUser);
+        localStorage.setItem("medshift_user", JSON.stringify(updatedUser));
+        setEditProfileOpen(false);
+      } else {
+        alert("Failed to update profile.");
+      }
+    } catch (e) {
+      console.error("Update error:", e);
+      alert("Network error updating profile.");
+    }
+  };
   
+  const [role,       setRole]       = useState(null);
+  const [activeTab,  setActiveTab]  = useState("home");
+  const [notifOpen,  setNotifOpen]  = useState(false);
+  const [unread,     setUnread]     = useState(3);
+  const [selectedShiftForApplicants, setSelectedShiftForApplicants] = useState(null);
+
+  useEffect(() => {
+    const savedRole = localStorage.getItem('medshift_role');
+    const savedUser = localStorage.getItem('medshift_user');
+    
+    if (savedRole && savedUser) {
+      setRole(savedRole);
+      try {
+        setCurrentUser(JSON.parse(savedUser));
+      } catch(e) {}
+      setIsAuthenticated(true);
+      setActiveTab("home");
+    } else {
+      setIsAuthenticated(false);
+      setCurrentUser(null);
+      setRole(savedRole || "technician");
+      setActiveTab("home");
+    }
+  }, []);
+
   useEffect(() => {
     if (isDark) {
       document.documentElement.classList.add('dark');
@@ -1712,19 +2402,165 @@ export default function MedShiftFull() {
       document.documentElement.classList.remove('dark');
     }
   }, [isDark]);
-
-  const [role,       setRole]       = useState("technician");
-  const [activeTab,  setActiveTab]  = useState("home");
-  const [notifOpen,  setNotifOpen]  = useState(false);
-  const [unread,     setUnread]     = useState(3);
   
   // Phase 6 addition
-  const [posts, setPosts] = useState(FEED_POSTS);
-  const [managerShifts, setManagerShifts] = useState(MANAGER_SHIFTS);
-  const [techShifts, setTechShifts] = useState(TECH_SHIFTS);
+  const [posts, setPosts] = useState([]);
+  const [managerShifts, setManagerShifts] = useState([]);
+  const [techShifts, setTechShifts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const timeAgo = (date) => {
+    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+    let interval = seconds / 31536000;
+    if (interval > 1) return Math.floor(interval) + " years ago";
+    interval = seconds / 2592000;
+    if (interval > 1) return Math.floor(interval) + " months ago";
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + " days ago";
+    interval = seconds / 3600;
+    if (interval > 1) return Math.floor(interval) + " hours ago";
+    interval = seconds / 60;
+    if (interval > 1) return Math.floor(interval) + " minutes ago";
+    return "Just now";
+  };
+
+  const fetchCommunityPosts = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/community/posts`);
+      if (res.ok) {
+        const data = await res.json();
+        const mappedPosts = data.map(post => ({
+          id: post.id,
+          type: "post",
+          author: post.author,
+          initials: post.initials,
+          role: post.role,
+          avatarColor: C.blue,
+          time: timeAgo(post.created_at),
+          verified: true,
+          body: post.content,
+          hasImage: !!post.image_url,
+          imageType: post.image_url === "mri" ? "mri" : null,
+          likes: 0,
+          comments: 0,
+          shares: 0,
+          liked: false,
+        }));
+        setPosts(mappedPosts);
+      }
+    } catch (err) {
+      console.error("Failed to fetch community posts", err);
+    }
+  };
+
+  const fetchAvailableShifts = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/api/shifts/available`);
+      if (res.ok) {
+        const data = await res.json();
+        const mappedShifts = data.map(s => ({
+          id: s.id,
+          title: s.title,
+          time: new Date(s.start_time).toLocaleString(undefined, {
+            month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit'
+          }),
+          pay: "₹" + s.hourly_rate + "/hr",
+          status: s.status,
+          statusLabel: s.status === 'searching' ? 'Searching…' : s.status,
+          color: s.is_urgent ? C.amber : C.teal,
+          icon: ScanLine,
+          dept: s.department,
+          duration: s.duration + " hrs",
+          totalEst: "₹" + (s.hourly_rate * s.duration),
+          hospital: s.hospital,
+          distance: "2.5 km",
+          equipment: s.title,
+          urgent: s.is_urgent
+        }));
+        setTechShifts(mappedShifts);
+        setManagerShifts(mappedShifts);
+      }
+    } catch (err) {
+      console.error("Failed to fetch shifts", err);
+    }
+  };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchCommunityPosts();
+      fetchAvailableShifts();
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (role === "manager" && isAuthenticated && currentUser?.id) {
+      setIsLoading(true);
+      fetch(`${API_BASE}/api/dashboard/manager?manager_id=${currentUser.id}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.posted_shifts) {
+                const formattedShifts = data.posted_shifts.map(s => ({
+                  id: s.id,
+                  title: s.title,
+                  time: new Date(s.start_time).toLocaleString(undefined, {
+                    month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit'
+                  }),
+                  pay: "₹" + s.hourly_rate + "/hr",
+                  status: s.status,
+                  statusLabel: s.status === 'searching' ? 'Searching…' : s.status,
+                  color: C.amber,
+                  icon: ScanLine,
+                  dept: s.department,
+                  duration: s.duration + " hrs",
+                  totalEst: "₹" + (s.hourly_rate * s.duration)
+                }));
+                setManagerShifts(formattedShifts);
+            }
+            setIsLoading(false);
+        })
+        .catch(err => {
+            console.error("Dashboard fetch error:", err);
+            setIsLoading(false);
+        });
+    } else {
+      setIsLoading(false);
+    }
+  }, [role, isAuthenticated]);
   const [createMenuOpen, setCreateMenuOpen] = useState(false);
   const [createPostOpen, setCreatePostOpen] = useState(false);
   const [createShiftOpen, setCreateShiftOpen] = useState(false);
+  const [selectedHospital, setSelectedHospital] = useState(null);
+  const [selectedTechnician, setSelectedTechnician] = useState(null);
+  const [callingUser, setCallingUser] = useState(null);
+
+  const handleLogout = () => {
+    localStorage.removeItem("medshift_role");
+    localStorage.removeItem("medshift_user");
+    setIsAuthenticated(false);
+    setActiveTab("home");
+    setRole("technician");
+    setCurrentUser(null);
+  };
+
+  const handleCompleteShift = async (shiftId) => {
+    if (!window.confirm("Complete this shift and archive it?")) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/shifts/${shiftId}/complete`, { method: "PUT" });
+      if (res.ok) {
+        setManagerShifts(prev => prev.map(s => s.id === shiftId ? { ...s, status: "completed", statusLabel: "Completed" } : s));
+      }
+    } catch(err) { console.error("Error completing shift", err); }
+  };
+
+  const handleCancelShift = async (shiftId) => {
+    if (!window.confirm("Are you sure you want to cancel this shift?")) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/shifts/${shiftId}/cancel`, { method: "PUT" });
+      if (res.ok) {
+        setManagerShifts(prev => prev.map(s => s.id === shiftId ? { ...s, status: "cancelled", statusLabel: "Cancelled" } : s));
+      }
+    } catch(err) { console.error("Error cancelling shift", err); }
+  };
 
   // Phase 2 Hardware Back Button
   useEffect(() => {
@@ -1750,65 +2586,112 @@ export default function MedShiftFull() {
     };
   }, [createPostOpen, createShiftOpen, createMenuOpen, notifOpen, activeTab]);
 
-  const handleCreatePost = (text) => {
-    const newPost = {
-      id: "p_" + Date.now(),
-      type: "post",
-      author: MANAGER.name,
-      initials: MANAGER.initials,
-      role: MANAGER.role,
-      avatarColor: C.blue,
-      time: "Just now",
-      verified: MANAGER.verified,
-      body: text,
-      hasImage: false,
-      likes: 0,
-      comments: 0,
-      shares: 0,
-      liked: false,
-    };
-    setPosts([newPost, ...posts]);
-    setCreatePostOpen(false);
-    setActiveTab("community");
+  const handleCreatePost = async (text) => {
+    if (!currentUser || !currentUser.id) {
+      alert("Session error: User ID missing. Please log in again.");
+      return;
+    }
+    try {
+      const res = await fetch(`${API_BASE}/api/community/posts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: text, author_id: currentUser.id })
+      });
+      if (!res.ok) throw new Error("Failed to create post");
+      
+      const data = await res.json();
+      
+      const newPost = {
+        id: data.id,
+        type: "post",
+        author: currentUser?.full_name || "Unknown User",
+        initials: currentUser?.full_name ? currentUser.full_name.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2) : "U",
+        role: currentUser?.role === "manager" ? "Hospital Manager" : "Medical Technician",
+        avatarColor: role === "manager" ? C.blue : C.teal,
+        time: "Just now",
+        verified: true,
+        body: data.content,
+        hasImage: false,
+        likes: 0,
+        comments: 0,
+        shares: 0,
+        liked: false,
+      };
+      setPosts([newPost, ...posts]);
+      setCreatePostOpen(false);
+      setActiveTab("community");
+    } catch (err) {
+      console.error(err);
+      // Fallback local update if backend fails
+      alert("Backend unreachable. Reverting to local state.");
+    }
   };
 
-  const handleCreateShift = ({ title, pay, urgent }) => {
-    const newShiftId = "s_" + Date.now();
-    
-    // Add to Manager Shifts
-    const newManagerShift = {
-      id: newShiftId,
-      title: title,
-      time: "Today, Just Now",
-      pay: pay,
-      status: "searching",
-      statusLabel: "Searching…",
-      color: C.amber,
-      icon: ScanLine,
-      dept: "Emergency Radiology",
-      duration: "4 hrs",
-      totalEst: "₹3,200",
-    };
-    setManagerShifts([newManagerShift, ...managerShifts]);
+  const handleCreateShift = async ({ title, pay, urgent }) => {
+    if (!currentUser?.id) return alert("Please log in again to create a shift.");
+    try {
+      const startTime = new Date();
+      const endTime = new Date(startTime.getTime() + 4 * 60 * 60 * 1000); // 4 hours later
+      
+      const res = await fetch(`${API_BASE}/api/shifts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          manager_id: currentUser.id,
+          title,
+          hourly_rate: Number(pay.replace(/[^0-9.]/g, '')),
+          is_urgent: urgent,
+          start_time: startTime.toISOString(),
+          end_time: endTime.toISOString(),
+          department: "Emergency Radiology" 
+        })
+      });
+      if (!res.ok) throw new Error("Failed to create shift");
+      
+      const s = await res.json();
+      
+      const newManagerShift = {
+        id: s.id,
+        title: s.title,
+        time: "Today, Just Now",
+        pay: "₹" + s.hourly_rate,
+        status: s.status,
+        statusLabel: "Searching…",
+        color: C.amber,
+        icon: ScanLine,
+        dept: s.department,
+        duration: s.duration + " hrs",
+        totalEst: "₹" + (s.hourly_rate * s.duration),
+      };
+      
+      setManagerShifts([newManagerShift, ...managerShifts]);
+      
+      const newTechShift = { ...newManagerShift, hospital: currentUser?.hospital || "Hospital", distance: "2.5 km", equipment: title };
+      setTechShifts([newTechShift, ...techShifts]);
+      
+      setCreateShiftOpen(false);
+      setActiveTab("home");
+    } catch (err) {
+      console.error(err);
+      alert("Backend unreachable. Reverting to local state.");
+    }
+  };
 
-    // Add to Tech Shifts
-    const newTechShift = {
-      id: newShiftId,
-      hospital: MANAGER.hospital,
-      distance: "2.5 km",
-      equipment: title,
-      pay: pay,
-      time: "Today, Just Now",
-      urgent: urgent,
-      dept: "Emergency Radiology",
-      duration: "4 hrs",
-      totalEst: "₹3,200",
-      color: C.amber,
-    };
-    setTechShifts([newTechShift, ...techShifts]);
-
-    setCreateShiftOpen(false);
-    setActiveTab("home");
+  const handleApplyShift = async (shiftId) => {
+    if (!currentUser || !currentUser.id) return alert("Please log in again.");
+    try {
+      const res = await fetch(`${API_BASE}/api/technician/shifts/${shiftId}/apply`, {
+        method: "POST",
+      });
+      if (!res.ok) {
+        const d = await res.json();
+        throw new Error(d.detail || "Failed to apply");
+      }
+      alert("Applied successfully! The manager will review your application.");
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "Backend unreachable. Local mode mock apply.");
+    }
   };
 
   const notifications = role === "manager" ? MANAGER_NOTIFICATIONS : TECH_NOTIFICATIONS;
@@ -1822,10 +2705,11 @@ export default function MedShiftFull() {
           body { background: #000; margin: 0; }
         `}</style>
         <div className="relative shadow-2xl overflow-y-auto" style={{ width: "100%", flex: 1 }}>
-          <DemoLoginScreen onLogin={(r) => {
+          <DemoLoginScreen onLogin={(r, guest = false) => {
             setRole(r);
             setActiveTab("home");
             setUnread(3);
+            setIsGuest(guest);
             setIsAuthenticated(true);
           }} />
         </div>
@@ -1835,25 +2719,27 @@ export default function MedShiftFull() {
 
   const renderTab = () => {
     switch (activeTab) {
-      case "home":      return role === "manager" ? <ManagerDashboard shifts={managerShifts} onCreateShift={() => setCreateShiftOpen(true)}/> : <TechRadar shifts={techShifts}/>;
-      case "shifts":    return <ShiftsTab role={role} managerShifts={managerShifts} techShifts={techShifts}/>;
-      case "community": return <CommunityFeed posts={posts}/>;
+      case "home":      return role === "manager" ? <ManagerDashboard shifts={managerShifts} onCreateShift={() => setCreateShiftOpen(true)} onViewProfileClick={(tech) => role === 'manager' && setSelectedTechnician(tech || true)} onCompleteShift={handleCompleteShift} onCancelShift={handleCancelShift} currentUser={currentUser} onViewApplicants={(shift) => setSelectedShiftForApplicants(shift)} /> : <TechRadar shifts={techShifts} onHospitalClick={(name) => role === 'technician' && setSelectedHospital(name)} isGuest={isGuest} onRequireAuth={handleRequireAuth} currentUser={currentUser} onApplyShift={handleApplyShift} />;
+      case "shifts":    return <ShiftsTab role={role} managerShifts={managerShifts} techShifts={techShifts} isGuest={isGuest} onRequireAuth={handleRequireAuth} currentUser={currentUser}/>;
+      case "community": return <CommunityFeed posts={posts} onAuthorClick={(name) => role === 'technician' && setSelectedHospital(name)} />;
       case "profile":
         return role === "manager" ? (
           <div className="flex flex-col gap-6">
-            <ManagerProfile/>
+            <ManagerProfile onLogout={handleLogout} currentUser={currentUser} onEditClick={() => setEditProfileOpen(true)} />
             <div className="mx-1 mt-2 pt-6 border-t border-slate-200">
               <h3 className="text-xs font-black mb-3 px-4 uppercase tracking-widest" style={{ fontFamily:F.head, color:"#0D9488" }}>Finance & Payments</h3>
-              <ManagerFinance/>
+              <ManagerFinance hospital={currentUser?.hospital || "Hospital"}/>
             </div>
           </div>
         ) : (
           <div className="flex flex-col gap-6">
-            <TechProfile/>
-            <div className="mx-1 mt-2 pt-6 border-t border-slate-200">
-              <h3 className="text-xs font-black mb-3 px-4 uppercase tracking-widest" style={{ fontFamily:F.head, color:"#0D9488" }}>Wallet & Earnings</h3>
-              <TechWallet/>
-            </div>
+            <TechProfile onLogout={handleLogout} isGuest={isGuest} onRequireAuth={handleRequireAuth} currentUser={currentUser} onEditClick={() => setEditTechProfileOpen(true)} />
+            {!isGuest && (
+              <div className="mx-1 mt-2 pt-6 border-t border-slate-200">
+                <h3 className="text-xs font-black mb-3 px-4 uppercase tracking-widest" style={{ fontFamily:F.head, color:"#0D9488" }}>Wallet & Earnings</h3>
+                <TechWallet/>
+              </div>
+            )}
           </div>
         );
       default:          return null;
@@ -1892,7 +2778,7 @@ export default function MedShiftFull() {
           </AnimatePresence>
         </main>
 
-        <BottomNav active={activeTab} setActive={setActiveTab} role={role} onAddClick={() => role === "manager" ? setCreateMenuOpen(true) : setCreatePostOpen(true)}/>
+        <BottomNav active={activeTab} setActive={setActiveTab} role={role} onAddClick={() => role === "manager" ? setCreateMenuOpen(true) : setCreatePostOpen(true)} isGuest={isGuest} onRequireAuth={handleRequireAuth}/>
 
         {/* Notification Panel — Phase 12 */}
         <NotificationCenter
@@ -1917,11 +2803,95 @@ export default function MedShiftFull() {
           onSubmit={handleCreateShift}
         />
 
-        {/* Create Post Sheet — Phase 6 */}
         <CreatePostSheet
           open={createPostOpen}
           onClose={() => setCreatePostOpen(false)}
           onSubmit={handleCreatePost}
+          currentUser={currentUser}
+        />
+
+        <AnimatePresence>
+          {selectedHospital && role === 'technician' && (
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[99999]" style={{ width: '100%', height: '100%' }}>
+              <HospitalProfile onBack={() => setSelectedHospital(null)} onCall={() => setCallingUser(selectedHospital)} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {selectedTechnician && role === 'manager' && (
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[99999]" style={{ width: '100%', height: '100%' }}>
+              <TechnicianProfile onBack={() => setSelectedTechnician(null)} onCall={() => setCallingUser(selectedTechnician)} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {callingUser && (
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[999999]" style={{ width: '100%', height: '100%' }}>
+              <CallingScreen 
+                callee={typeof callingUser === 'string' && callingUser !== true ? callingUser : "MedShift Contact"} 
+                onEnd={() => setCallingUser(null)} 
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <EditManagerProfileSheet 
+          open={editProfileOpen} 
+          onClose={() => setEditProfileOpen(false)} 
+          currentUser={currentUser} 
+          onSubmit={handleUpdateManagerProfile} 
+        />
+
+        <EditTechProfileSheet 
+          open={editTechProfileOpen} 
+          onClose={() => setEditTechProfileOpen(false)} 
+          currentUser={currentUser} 
+          onSubmit={handleUpdateTechProfile} 
+        />
+
+        <AnimatePresence>
+          {showTechAuth && (
+            <TechAuthScreen 
+              initialMode={techAuthMode}
+              onClose={() => setShowTechAuth(false)}
+              onSuccess={(data) => {
+                setShowTechAuth(false);
+                setIsGuest(false);
+                
+                // Handle both `data` and `data.user` depending on login vs register payloads
+                const userObj = data.user ? data.user : data;
+
+                if (userObj && userObj.id) {
+                  const newUserState = { 
+                    id: userObj.id, 
+                    full_name: userObj.full_name, 
+                    role: userObj.role,
+                    email: userObj.email 
+                  };
+                  setCurrentUser(newUserState);
+                  localStorage.setItem("medshift_user", JSON.stringify(newUserState));
+                  localStorage.setItem("medshift_role", userObj.role);
+                } else {
+                  setCurrentUser({ full_name: "Verified Technician" });
+                }
+              }}
+            />
+          )}
+        </AnimatePresence>
+
+        <ApplicantsModal 
+          open={!!selectedShiftForApplicants} 
+          shift={selectedShiftForApplicants} 
+          onClose={() => setSelectedShiftForApplicants(null)} 
+          onApplicantAction={() => window.location.reload()} 
         />
     </div>
   );

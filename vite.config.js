@@ -5,6 +5,7 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vitejs.dev/config/
 export default defineConfig({
   base: './', // <--- THIS IS THE MAGIC LINE FOR ANDROID
+  build: { outDir: "dist" },
   server: {
     host: true,
     allowedHosts: ['https://medmis.vercel.app/', 'lics-fry.loca.lt']

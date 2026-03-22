@@ -11,10 +11,10 @@ import {
 
 // ─── PALETTE ──────────────────────────────────────────────────────────────────
 const C = {
-  blue:  "#1A365D",
-  teal:  "#0D9488",
+  blue: "#1A365D",
+  teal: "#0D9488",
   pearl: "#F8FAFC",
-  card:  "#FFFFFF",
+  card: "#FFFFFF",
 };
 
 // ─── DEMO DATA ────────────────────────────────────────────────────────────────
@@ -32,12 +32,12 @@ const HOSPITAL = {
   departments: ["Radiology", "Oncology", "Neurology", "Cardiology"],
   activeRequirements: [
     { id: 1, equip: "MRI Technician", urgency: "URGENT", shift: "Today, 2:00 PM", pay: "₹1,200/hr", color: "#EF4444" },
-    { id: 2, equip: "CT Scan Tech",   urgency: "SOON",   shift: "Today, 6:00 PM", pay: "₹980/hr",  color: "#F59E0B" },
-    { id: 3, equip: "X-Ray Tech",     urgency: "OPEN",   shift: "Tomorrow, 9 AM", pay: "₹750/hr",  color: C.teal   },
+    { id: 2, equip: "CT Scan Tech", urgency: "SOON", shift: "Today, 6:00 PM", pay: "₹980/hr", color: "#F59E0B" },
+    { id: 3, equip: "X-Ray Tech", urgency: "OPEN", shift: "Tomorrow, 9 AM", pay: "₹750/hr", color: C.teal },
   ],
   reviews: [
     { name: "Priya K.", text: "Very professional environment, quick onboarding.", stars: 5 },
-    { name: "Rahul M.", text: "Paid on time, great staff support on-site.",       stars: 5 },
+    { name: "Rahul M.", text: "Paid on time, great staff support on-site.", stars: 5 },
   ],
 };
 
@@ -58,8 +58,8 @@ const TECHNICIAN = {
   specialties: ["Brain MRI", "Spine", "Cardiac", "Vascular"],
   recentShifts: [
     { hospital: "Apollo Diagnostics", date: "Mar 15", pay: "₹4,800", rating: 5 },
-    { hospital: "Fortis Healthtech",  date: "Mar 12", pay: "₹7,200", rating: 5 },
-    { hospital: "Ruby Hall Clinic",   date: "Mar 10", pay: "₹3,600", rating: 4 },
+    { hospital: "Fortis Healthtech", date: "Mar 12", pay: "₹7,200", rating: 5 },
+    { hospital: "Ruby Hall Clinic", date: "Mar 10", pay: "₹3,600", rating: 4 },
   ],
 };
 
@@ -71,7 +71,7 @@ const StatusBar = ({ dark = false }) => (
       style={{ color: dark ? "white" : "white", fontFamily: "'DM Mono', monospace" }}>9:41</span>
     <div className="flex items-center gap-2">
       <Signal size={12} className="text-white" />
-      <Wifi   size={12} className="text-white" />
+      <Wifi size={12} className="text-white" />
       <Battery size={14} className="text-white" />
     </div>
   </div>
@@ -88,7 +88,7 @@ const VerifiedBadge = ({ label = "Verified" }) => (
 // ─────────────────────────────────────────────────────────────────────────────
 // PHASE 10-A  ·  HOSPITAL MANAGER PROFILE  (viewed by a Technician)
 // ─────────────────────────────────────────────────────────────────────────────
-const HospitalProfile = ({ onCall, onBack }) => {
+export const HospitalProfile = ({ onCall, onBack }) => {
   return (
     <motion.div
       className="absolute inset-0 z-20 overflow-y-auto"
@@ -107,57 +107,57 @@ const HospitalProfile = ({ onCall, onBack }) => {
           {/* Sky gradient */}
           <defs>
             <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#BFDBFE"/>
-              <stop offset="100%" stopColor="#DBEAFE"/>
+              <stop offset="0%" stopColor="#BFDBFE" />
+              <stop offset="100%" stopColor="#DBEAFE" />
             </linearGradient>
             <linearGradient id="bldg" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#F8FAFC"/>
-              <stop offset="100%" stopColor="#E2E8F0"/>
+              <stop offset="0%" stopColor="#F8FAFC" />
+              <stop offset="100%" stopColor="#E2E8F0" />
             </linearGradient>
           </defs>
-          <rect width="430" height="200" fill="url(#sky)"/>
+          <rect width="430" height="200" fill="url(#sky)" />
           {/* Background buildings */}
-          <rect x="0"   y="80"  width="60"  height="120" rx="2" fill="#CBD5E1" opacity="0.6"/>
-          <rect x="360" y="70"  width="70"  height="130" rx="2" fill="#CBD5E1" opacity="0.5"/>
+          <rect x="0" y="80" width="60" height="120" rx="2" fill="#CBD5E1" opacity="0.6" />
+          <rect x="360" y="70" width="70" height="130" rx="2" fill="#CBD5E1" opacity="0.5" />
           {/* Main hospital building */}
-          <rect x="80"  y="40"  width="270" height="160" rx="4" fill="url(#bldg)"/>
+          <rect x="80" y="40" width="270" height="160" rx="4" fill="url(#bldg)" />
           {/* Cross sign */}
-          <rect x="195" y="50"  width="40"  height="12"  rx="3" fill="#EF4444" opacity="0.9"/>
-          <rect x="209" y="42"  width="12"  height="28"  rx="3" fill="#EF4444" opacity="0.9"/>
+          <rect x="195" y="50" width="40" height="12" rx="3" fill="#EF4444" opacity="0.9" />
+          <rect x="209" y="42" width="12" height="28" rx="3" fill="#EF4444" opacity="0.9" />
           {/* Windows */}
-          {[110,155,200,245,290,335].map((x,i) => (
+          {[110, 155, 200, 245, 290, 335].map((x, i) => (
             <g key={i}>
-              <rect x={x} y="75"  width="22" height="26" rx="2" fill="#93C5FD" opacity="0.8"/>
-              <rect x={x} y="115" width="22" height="26" rx="2" fill="#93C5FD" opacity="0.8"/>
-              <rect x={x} y="155" width="22" height="26" rx="2" fill="#BAE6FD" opacity="0.7"/>
+              <rect x={x} y="75" width="22" height="26" rx="2" fill="#93C5FD" opacity="0.8" />
+              <rect x={x} y="115" width="22" height="26" rx="2" fill="#93C5FD" opacity="0.8" />
+              <rect x={x} y="155" width="22" height="26" rx="2" fill="#BAE6FD" opacity="0.7" />
             </g>
           ))}
           {/* Entrance */}
-          <rect x="175" y="148" width="80"  height="52"  rx="3" fill="#1A365D" opacity="0.15"/>
-          <rect x="195" y="148" width="40"  height="52"  rx="3" fill="#1A365D" opacity="0.2"/>
+          <rect x="175" y="148" width="80" height="52" rx="3" fill="#1A365D" opacity="0.15" />
+          <rect x="195" y="148" width="40" height="52" rx="3" fill="#1A365D" opacity="0.2" />
           {/* Ground */}
-          <rect x="0" y="192" width="430" height="8" fill="#94A3B8" opacity="0.3"/>
+          <rect x="0" y="192" width="430" height="8" fill="#94A3B8" opacity="0.3" />
           {/* NABH banner */}
-          <rect x="85" y="42" width="72" height="16" rx="3" fill={C.teal} opacity="0.9"/>
+          <rect x="85" y="42" width="72" height="16" rx="3" fill={C.teal} opacity="0.9" />
           <text x="121" y="54" textAnchor="middle" fill="white" fontSize="8" fontFamily="monospace" fontWeight="bold">NABH ✓</text>
         </svg>
 
         {/* Nav buttons */}
         <button onClick={onBack}
           className="absolute top-3 left-4 z-10 w-9 h-9 rounded-2xl flex items-center justify-center"
-          style={{ background:"rgba(255,255,255,0.88)", backdropFilter:"blur(10px)" }}>
-          <ArrowLeft size={17} color={C.blue}/>
+          style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(10px)" }}>
+          <ArrowLeft size={17} color={C.blue} />
         </button>
         <button className="absolute top-3 right-4 z-10 w-9 h-9 rounded-2xl flex items-center justify-center"
-          style={{ background:"rgba(255,255,255,0.88)", backdropFilter:"blur(10px)" }}>
-          <MoreVertical size={17} color={C.blue}/>
+          style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(10px)" }}>
+          <MoreVertical size={17} color={C.blue} />
         </button>
 
         {/* Circular logo avatar — overlapping the cover */}
         <div className="absolute -bottom-10 left-5 z-10">
           <div className="w-20 h-20 rounded-3xl border-4 border-white flex items-center justify-center shadow-xl"
             style={{ background: `linear-gradient(135deg, ${C.blue}, #1E4A7A)` }}>
-            <Activity size={30} color="white" strokeWidth={2}/>
+            <Activity size={30} color="white" strokeWidth={2} />
           </div>
         </div>
       </div>
@@ -168,14 +168,14 @@ const HospitalProfile = ({ onCall, onBack }) => {
         {/* Hospital Name & Badges */}
         <div className="flex items-start justify-between mb-1">
           <div className="flex-1">
-            <h1 className="font-black text-2xl leading-tight" style={{ color:C.blue, fontFamily:"'DM Sans', sans-serif" }}>
+            <h1 className="font-black text-2xl leading-tight" style={{ color: C.blue, fontFamily: "'DM Sans', sans-serif" }}>
               {HOSPITAL.name}
             </h1>
             <p className="text-sm text-slate-400 mt-0.5">{HOSPITAL.tagline}</p>
           </div>
           <div className="flex flex-col items-end gap-1.5 mt-1">
-            <VerifiedBadge label="NABH Verified"/>
-            <VerifiedBadge label="ISO Certified"/>
+            <VerifiedBadge label="NABH Verified" />
+            <VerifiedBadge label="ISO Certified" />
           </div>
         </div>
 
@@ -184,33 +184,33 @@ const HospitalProfile = ({ onCall, onBack }) => {
           <div className="w-8 h-8 rounded-xl flex items-center justify-center font-black text-white text-sm"
             style={{ background: C.teal }}>A</div>
           <div>
-            <p className="font-bold text-sm" style={{ color:C.blue }}>{HOSPITAL.manager}</p>
+            <p className="font-bold text-sm" style={{ color: C.blue }}>{HOSPITAL.manager}</p>
             <p className="text-xs text-slate-400">{HOSPITAL.managerRole}</p>
           </div>
           <span className="ml-auto flex items-center gap-1 text-xs font-bold"
-            style={{ color:"#10B981" }}>
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"/> Online
+            style={{ color: "#10B981" }}>
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> Online
           </span>
         </div>
 
         {/* Address */}
         <div className="flex items-center gap-2 mb-5 px-3 py-2.5 rounded-2xl"
-          style={{ background:"#F1F5F9" }}>
-          <MapPin size={15} color={C.teal}/>
+          style={{ background: "#F1F5F9" }}>
+          <MapPin size={15} color={C.teal} />
           <span className="text-sm text-slate-500">{HOSPITAL.address}</span>
         </div>
 
         {/* Quick Stats */}
         <div className="grid grid-cols-3 gap-3 mb-6">
           {[
-            { label:"Rating",   value: HOSPITAL.rating,       icon:Star,      color:"#F59E0B", suffix:"★" },
-            { label:"Hires",    value: HOSPITAL.totalHires,    icon:Users,     color:C.teal,    suffix:"+" },
-            { label:"Response", value: HOSPITAL.responseTime,  icon:Timer,     color:C.blue,    suffix:"" },
-          ].map(({ label, value, icon:Icon, color, suffix }) => (
+            { label: "Rating", value: HOSPITAL.rating, icon: Star, color: "#F59E0B", suffix: "★" },
+            { label: "Hires", value: HOSPITAL.totalHires, icon: Users, color: C.teal, suffix: "+" },
+            { label: "Response", value: HOSPITAL.responseTime, icon: Timer, color: C.blue, suffix: "" },
+          ].map(({ label, value, icon: Icon, color, suffix }) => (
             <div key={label} className="rounded-2xl p-3 text-center"
-              style={{ background:`${color}0D`, border:`1px solid ${color}22` }}>
-              <Icon size={13} color={color} className="mx-auto mb-1"/>
-              <p className="font-black text-sm" style={{ color, fontFamily:"'DM Mono', monospace" }}>
+              style={{ background: `${color}0D`, border: `1px solid ${color}22` }}>
+              <Icon size={13} color={color} className="mx-auto mb-1" />
+              <p className="font-black text-sm" style={{ color, fontFamily: "'DM Mono', monospace" }}>
                 {value}{suffix}
               </p>
               <p className="text-[10px] text-slate-400">{label}</p>
@@ -221,11 +221,11 @@ const HospitalProfile = ({ onCall, onBack }) => {
         {/* Departments */}
         <div className="mb-6">
           <h3 className="text-xs font-black uppercase tracking-widest mb-3"
-            style={{ color:"#94A3B8", fontFamily:"'DM Mono', monospace" }}>Departments</h3>
+            style={{ color: "#94A3B8", fontFamily: "'DM Mono', monospace" }}>Departments</h3>
           <div className="flex flex-wrap gap-2">
             {HOSPITAL.departments.map(d => (
               <span key={d} className="px-3 py-1.5 rounded-full text-xs font-bold"
-                style={{ background:`${C.blue}0C`, color:C.blue }}>
+                style={{ background: `${C.blue}0C`, color: C.blue }}>
                 {d}
               </span>
             ))}
@@ -236,34 +236,36 @@ const HospitalProfile = ({ onCall, onBack }) => {
         <div className="mb-6">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-xs font-black uppercase tracking-widest"
-              style={{ color:"#94A3B8", fontFamily:"'DM Mono', monospace" }}>
+              style={{ color: "#94A3B8", fontFamily: "'DM Mono', monospace" }}>
               Active Requirements
             </h3>
             <span className="text-xs font-bold px-2 py-0.5 rounded-full"
-              style={{ background:"#FEF2F2", color:"#EF4444" }}>
+              style={{ background: "#FEF2F2", color: "#EF4444" }}>
               {HOSPITAL.activeRequirements.length} Open
             </span>
           </div>
           <div className="flex flex-col gap-3">
             {HOSPITAL.activeRequirements.map((req, i) => (
               <motion.div key={req.id}
-                initial={{ opacity:0, x:-16 }} animate={{ opacity:1, x:0 }}
+                initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.08 }}
                 className="flex items-center gap-3 rounded-2xl px-4 py-3"
-                style={{ background:C.card, border:`1px solid ${req.color}22`,
-                  boxShadow:`0 2px 12px ${req.color}10` }}>
+                style={{
+                  background: C.card, border: `1px solid ${req.color}22`,
+                  boxShadow: `0 2px 12px ${req.color}10`
+                }}>
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ background:`${req.color}12` }}>
-                  <Zap size={15} color={req.color}/>
+                  style={{ background: `${req.color}12` }}>
+                  <Zap size={15} color={req.color} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-bold text-sm truncate" style={{ color:C.blue }}>{req.equip}</p>
+                  <p className="font-bold text-sm truncate" style={{ color: C.blue }}>{req.equip}</p>
                   <p className="text-xs text-slate-400">{req.shift}</p>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <p className="font-black text-sm" style={{ color:C.teal }}>{req.pay}</p>
+                  <p className="font-black text-sm" style={{ color: C.teal }}>{req.pay}</p>
                   <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full"
-                    style={{ background:`${req.color}15`, color:req.color }}>
+                    style={{ background: `${req.color}15`, color: req.color }}>
                     {req.urgency}
                   </span>
                 </div>
@@ -275,14 +277,14 @@ const HospitalProfile = ({ onCall, onBack }) => {
         {/* Reviews */}
         <div className="mb-6">
           <h3 className="text-xs font-black uppercase tracking-widest mb-3"
-            style={{ color:"#94A3B8", fontFamily:"'DM Mono', monospace" }}>Technician Reviews</h3>
+            style={{ color: "#94A3B8", fontFamily: "'DM Mono', monospace" }}>Technician Reviews</h3>
           {HOSPITAL.reviews.map((r, i) => (
-            <div key={i} className="mb-3 p-4 rounded-2xl" style={{ background:C.card, border:"1px solid #F1F5F9" }}>
+            <div key={i} className="mb-3 p-4 rounded-2xl" style={{ background: C.card, border: "1px solid #F1F5F9" }}>
               <div className="flex items-center justify-between mb-1.5">
-                <span className="font-bold text-sm" style={{ color:C.blue }}>{r.name}</span>
+                <span className="font-bold text-sm" style={{ color: C.blue }}>{r.name}</span>
                 <div className="flex gap-0.5">
-                  {Array.from({length:r.stars}).map((_,j) => (
-                    <Star key={j} size={11} fill="#F59E0B" color="#F59E0B"/>
+                  {Array.from({ length: r.stars }).map((_, j) => (
+                    <Star key={j} size={11} fill="#F59E0B" color="#F59E0B" />
                   ))}
                 </div>
               </div>
@@ -294,21 +296,25 @@ const HospitalProfile = ({ onCall, onBack }) => {
 
       {/* ── Sticky Action Buttons ── */}
       <div className="fixed bottom-0 left-0 right-0 z-30 px-5 pb-8 pt-4"
-        style={{ background:"rgba(248,250,252,0.96)", backdropFilter:"blur(16px)",
-          borderTop:"1px solid #E2E8F0", maxWidth:430, margin:"0 auto" }}>
+        style={{
+          background: "rgba(248,250,252,0.96)", backdropFilter: "blur(16px)",
+          borderTop: "1px solid #E2E8F0", maxWidth: 430, margin: "0 auto"
+        }}>
         <div className="flex gap-3">
           {/* Message button — primary */}
-          <motion.button whileTap={{ scale:0.96 }}
+          <motion.button whileTap={{ scale: 0.96 }}
             className="flex-1 py-4 rounded-2xl font-black text-base text-white flex items-center justify-center gap-2.5"
-            style={{ background:`linear-gradient(135deg, ${C.teal}, #0F766E)`,
-              boxShadow:`0 8px 24px ${C.teal}40`, fontFamily:"'DM Sans', sans-serif" }}>
-            <MessageCircle size={20}/> Message Manager
+            style={{
+              background: `linear-gradient(135deg, ${C.teal}, #0F766E)`,
+              boxShadow: `0 8px 24px ${C.teal}40`, fontFamily: "'DM Sans', sans-serif"
+            }}>
+            <MessageCircle size={20} /> Message Manager
           </motion.button>
           {/* WhatsApp-style call button */}
-          <motion.button whileTap={{ scale:0.94 }} onClick={onCall}
+          <motion.button whileTap={{ scale: 0.94 }} onClick={onCall}
             className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
-            style={{ background:"#25D366", boxShadow:"0 8px 24px rgba(37,211,102,0.4)" }}>
-            <Phone size={22} color="white"/>
+            style={{ background: "#25D366", boxShadow: "0 8px 24px rgba(37,211,102,0.4)" }}>
+            <Phone size={22} color="white" />
           </motion.button>
         </div>
         <p className="text-center text-xs text-slate-400 mt-2.5">
@@ -322,31 +328,31 @@ const HospitalProfile = ({ onCall, onBack }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // PHASE 10-B  ·  TECHNICIAN PROFILE  (viewed by a Manager)
 // ─────────────────────────────────────────────────────────────────────────────
-const TechnicianProfile = ({ onCall, onBack }) => {
+export const TechnicianProfile = ({ onCall, onBack }) => {
   const [hired, setHired] = useState(false);
 
   return (
     <motion.div
       className="absolute inset-0 z-20 overflow-y-auto"
-      style={{ background:C.pearl, scrollbarWidth:"none" }}
-      initial={{ x:"100%" }} animate={{ x:0 }} exit={{ x:"100%" }}
-      transition={{ type:"spring", stiffness:340, damping:38 }}
+      style={{ background: C.pearl, scrollbarWidth: "none" }}
+      initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
+      transition={{ type: "spring", stiffness: 340, damping: 38 }}
     >
       <style>{`::-webkit-scrollbar{display:none}`}</style>
-      <StatusBar/>
+      <StatusBar />
 
       {/* ── Hero Header — Deep Blue gradient ── */}
       <div className="relative px-5 pt-4 pb-8"
-        style={{ background:`linear-gradient(160deg, ${C.blue} 0%, #0F2744 100%)` }}>
+        style={{ background: `linear-gradient(160deg, ${C.blue} 0%, #0F2744 100%)` }}>
         <div className="flex items-center justify-between mb-5">
           <button onClick={onBack}
             className="w-9 h-9 rounded-2xl flex items-center justify-center"
-            style={{ background:"rgba(255,255,255,0.12)" }}>
-            <ArrowLeft size={17} color="white"/>
+            style={{ background: "rgba(255,255,255,0.12)" }}>
+            <ArrowLeft size={17} color="white" />
           </button>
           <button className="w-9 h-9 rounded-2xl flex items-center justify-center"
-            style={{ background:"rgba(255,255,255,0.12)" }}>
-            <MoreVertical size={17} color="white"/>
+            style={{ background: "rgba(255,255,255,0.12)" }}>
+            <MoreVertical size={17} color="white" />
           </button>
         </div>
 
@@ -354,17 +360,19 @@ const TechnicianProfile = ({ onCall, onBack }) => {
         <div className="flex flex-col items-center">
           <div className="relative mb-3">
             <div className="w-24 h-24 rounded-3xl border-4 flex items-center justify-center font-black text-4xl text-white shadow-2xl"
-              style={{ background:`linear-gradient(135deg, ${C.teal}, #0F766E)`,
-                borderColor:"rgba(255,255,255,0.2)" }}>
+              style={{
+                background: `linear-gradient(135deg, ${C.teal}, #0F766E)`,
+                borderColor: "rgba(255,255,255,0.2)"
+              }}>
               R
             </div>
             {/* Online dot */}
             <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white flex items-center justify-center"
-              style={{ background:"#10B981" }}>
-              <span className="w-2 h-2 rounded-full bg-white animate-pulse"/>
+              style={{ background: "#10B981" }}>
+              <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
             </span>
           </div>
-          <h1 className="font-black text-2xl text-white" style={{ fontFamily:"'DM Sans', sans-serif" }}>
+          <h1 className="font-black text-2xl text-white" style={{ fontFamily: "'DM Sans', sans-serif" }}>
             {TECHNICIAN.fullName}
           </h1>
           <p className="text-white/70 text-sm mt-0.5">{TECHNICIAN.title}</p>
@@ -372,20 +380,20 @@ const TechnicianProfile = ({ onCall, onBack }) => {
           {/* Rating row */}
           <div className="flex items-center gap-3 mt-3">
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
-              style={{ background:"rgba(255,255,255,0.12)" }}>
-              <Star size={13} fill="#F59E0B" color="#F59E0B"/>
+              style={{ background: "rgba(255,255,255,0.12)" }}>
+              <Star size={13} fill="#F59E0B" color="#F59E0B" />
               <span className="text-white font-black text-sm">{TECHNICIAN.rating}</span>
               <span className="text-white/50 text-xs">/ 5.0</span>
             </div>
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
-              style={{ background:"rgba(255,255,255,0.12)" }}>
-              <Hash size={13} color="rgba(255,255,255,0.7)"/>
+              style={{ background: "rgba(255,255,255,0.12)" }}>
+              <Hash size={13} color="rgba(255,255,255,0.7)" />
               <span className="text-white font-black text-sm">{TECHNICIAN.totalShifts}</span>
               <span className="text-white/50 text-xs">shifts</span>
             </div>
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
-              style={{ background:"rgba(13,148,136,0.35)" }}>
-              <Activity size={13} color={C.teal}/>
+              style={{ background: "rgba(13,148,136,0.35)" }}>
+              <Activity size={13} color={C.teal} />
               <span className="text-white text-xs font-bold">{TECHNICIAN.lastActive}</span>
             </div>
           </div>
@@ -398,22 +406,24 @@ const TechnicianProfile = ({ onCall, onBack }) => {
         {/* ── 2×2 Details Grid ── */}
         <div className="grid grid-cols-2 gap-3 mb-6">
           {[
-            { label:"Experience",   value:TECHNICIAN.experience,    icon:Briefcase, color:C.blue,    bg:`${C.blue}0C`    },
-            { label:"Equipment",    value:TECHNICIAN.equipment,     icon:Cpu,       color:"#8B5CF6", bg:"#8B5CF60C"     },
-            { label:"Response",     value:TECHNICIAN.responseTime,  icon:Timer,     color:C.teal,    bg:`${C.teal}0C`   },
-            { label:"Distance",     value:TECHNICIAN.distance,      icon:Navigation,color:"#F59E0B", bg:"#F59E0B0C"     },
-          ].map(({ label, value, icon:Icon, color, bg }) => (
+            { label: "Experience", value: TECHNICIAN.experience, icon: Briefcase, color: C.blue, bg: `${C.blue}0C` },
+            { label: "Equipment", value: TECHNICIAN.equipment, icon: Cpu, color: "#8B5CF6", bg: "#8B5CF60C" },
+            { label: "Response", value: TECHNICIAN.responseTime, icon: Timer, color: C.teal, bg: `${C.teal}0C` },
+            { label: "Distance", value: TECHNICIAN.distance, icon: Navigation, color: "#F59E0B", bg: "#F59E0B0C" },
+          ].map(({ label, value, icon: Icon, color, bg }) => (
             <motion.div key={label}
-              initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }}
-              transition={{ delay:0.05 }}
+              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
               className="rounded-2xl p-4"
-              style={{ background:C.card, border:`1px solid ${color}18`,
-                boxShadow:`0 2px 12px ${color}08` }}>
+              style={{
+                background: C.card, border: `1px solid ${color}18`,
+                boxShadow: `0 2px 12px ${color}08`
+              }}>
               <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-2"
-                style={{ background:bg }}>
-                <Icon size={17} color={color}/>
+                style={{ background: bg }}>
+                <Icon size={17} color={color} />
               </div>
-              <p className="font-black text-base leading-tight" style={{ color, fontFamily:"'DM Mono', monospace" }}>
+              <p className="font-black text-base leading-tight" style={{ color, fontFamily: "'DM Mono', monospace" }}>
                 {value}
               </p>
               <p className="text-xs text-slate-400 mt-0.5">{label}</p>
@@ -424,12 +434,12 @@ const TechnicianProfile = ({ onCall, onBack }) => {
         {/* Certifications */}
         <div className="mb-6">
           <h3 className="text-xs font-black uppercase tracking-widest mb-3"
-            style={{ color:"#94A3B8", fontFamily:"'DM Mono', monospace" }}>Certifications</h3>
+            style={{ color: "#94A3B8", fontFamily: "'DM Mono', monospace" }}>Certifications</h3>
           <div className="flex flex-wrap gap-2">
             {TECHNICIAN.certifications.map(cert => (
               <span key={cert} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold"
-                style={{ background:`${C.teal}10`, color:C.teal }}>
-                <Shield size={11}/> {cert}
+                style={{ background: `${C.teal}10`, color: C.teal }}>
+                <Shield size={11} /> {cert}
               </span>
             ))}
           </div>
@@ -438,11 +448,11 @@ const TechnicianProfile = ({ onCall, onBack }) => {
         {/* Specialties */}
         <div className="mb-6">
           <h3 className="text-xs font-black uppercase tracking-widest mb-3"
-            style={{ color:"#94A3B8", fontFamily:"'DM Mono', monospace" }}>MRI Specialties</h3>
+            style={{ color: "#94A3B8", fontFamily: "'DM Mono', monospace" }}>MRI Specialties</h3>
           <div className="flex flex-wrap gap-2">
             {TECHNICIAN.specialties.map(s => (
               <span key={s} className="px-3 py-1.5 rounded-full text-xs font-bold"
-                style={{ background:`${C.blue}08`, color:C.blue }}>
+                style={{ background: `${C.blue}08`, color: C.blue }}>
                 {s}
               </span>
             ))}
@@ -451,42 +461,42 @@ const TechnicianProfile = ({ onCall, onBack }) => {
 
         {/* Performance Bar */}
         <div className="rounded-2xl p-4 mb-6"
-          style={{ background:C.card, border:`1px solid ${C.teal}20` }}>
+          style={{ background: C.card, border: `1px solid ${C.teal}20` }}>
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-black uppercase tracking-widest"
-              style={{ color:"#94A3B8", fontFamily:"'DM Mono', monospace" }}>Shift Completion</span>
-            <span className="font-black text-base" style={{ color:C.teal, fontFamily:"'DM Mono', monospace" }}>
+              style={{ color: "#94A3B8", fontFamily: "'DM Mono', monospace" }}>Shift Completion</span>
+            <span className="font-black text-base" style={{ color: C.teal, fontFamily: "'DM Mono', monospace" }}>
               {TECHNICIAN.completionRate}
             </span>
           </div>
-          <div className="h-2.5 rounded-full overflow-hidden" style={{ background:"#F1F5F9" }}>
+          <div className="h-2.5 rounded-full overflow-hidden" style={{ background: "#F1F5F9" }}>
             <motion.div className="h-full rounded-full"
-              style={{ background:`linear-gradient(90deg, ${C.teal}, #0F766E)` }}
-              initial={{ width:0 }} animate={{ width:"98%" }}
-              transition={{ duration:1.2, ease:"easeOut", delay:0.3 }}/>
+              style={{ background: `linear-gradient(90deg, ${C.teal}, #0F766E)` }}
+              initial={{ width: 0 }} animate={{ width: "98%" }}
+              transition={{ duration: 1.2, ease: "easeOut", delay: 0.3 }} />
           </div>
         </div>
 
         {/* Recent Shifts */}
         <div className="mb-6">
           <h3 className="text-xs font-black uppercase tracking-widest mb-3"
-            style={{ color:"#94A3B8", fontFamily:"'DM Mono', monospace" }}>Recent Shifts</h3>
+            style={{ color: "#94A3B8", fontFamily: "'DM Mono', monospace" }}>Recent Shifts</h3>
           {TECHNICIAN.recentShifts.map((s, i) => (
             <div key={i} className="flex items-center gap-3 py-3"
-              style={{ borderBottom:"1px solid #F1F5F9" }}>
+              style={{ borderBottom: "1px solid #F1F5F9" }}>
               <div className="w-9 h-9 rounded-xl flex items-center justify-center"
-                style={{ background:`${C.blue}08` }}>
-                <Activity size={15} color={C.blue}/>
+                style={{ background: `${C.blue}08` }}>
+                <Activity size={15} color={C.blue} />
               </div>
               <div className="flex-1">
-                <p className="font-bold text-sm" style={{ color:C.blue }}>{s.hospital}</p>
+                <p className="font-bold text-sm" style={{ color: C.blue }}>{s.hospital}</p>
                 <p className="text-xs text-slate-400">{s.date}</p>
               </div>
               <div className="text-right">
-                <p className="font-bold text-sm" style={{ color:C.teal }}>{s.pay}</p>
+                <p className="font-bold text-sm" style={{ color: C.teal }}>{s.pay}</p>
                 <div className="flex items-center gap-0.5 justify-end">
-                  {Array.from({length:s.rating}).map((_,j) => (
-                    <Star key={j} size={9} fill="#F59E0B" color="#F59E0B"/>
+                  {Array.from({ length: s.rating }).map((_, j) => (
+                    <Star key={j} size={9} fill="#F59E0B" color="#F59E0B" />
                   ))}
                 </div>
               </div>
@@ -497,18 +507,20 @@ const TechnicianProfile = ({ onCall, onBack }) => {
 
       {/* ── Sticky Bottom — Hire Instantly + Call/Text ── */}
       <div className="fixed bottom-0 left-0 right-0 z-30 px-5 pb-8 pt-4"
-        style={{ background:"rgba(248,250,252,0.96)", backdropFilter:"blur(16px)",
-          borderTop:"1px solid #E2E8F0", maxWidth:430, margin:"0 auto" }}>
+        style={{
+          background: "rgba(248,250,252,0.96)", backdropFilter: "blur(16px)",
+          borderTop: "1px solid #E2E8F0", maxWidth: 430, margin: "0 auto"
+        }}>
         <div className="flex gap-3 mb-2.5">
           {/* Text icon */}
-          <motion.button whileTap={{ scale:0.92 }}
+          <motion.button whileTap={{ scale: 0.92 }}
             className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
-            style={{ background:`${C.blue}0C`, border:`1px solid ${C.blue}20` }}>
-            <MessageCircle size={22} color={C.blue}/>
+            style={{ background: `${C.blue}0C`, border: `1px solid ${C.blue}20` }}>
+            <MessageCircle size={22} color={C.blue} />
           </motion.button>
 
           {/* Hire button */}
-          <motion.button whileTap={{ scale:0.96 }}
+          <motion.button whileTap={{ scale: 0.96 }}
             onClick={() => setHired(h => !h)}
             className="flex-1 py-4 rounded-2xl font-black text-lg text-white flex items-center justify-center gap-2"
             style={{
@@ -518,28 +530,28 @@ const TechnicianProfile = ({ onCall, onBack }) => {
               boxShadow: hired
                 ? "0 8px 32px rgba(16,185,129,0.4)"
                 : `0 8px 32px ${C.teal}45`,
-              fontFamily:"'DM Sans', sans-serif"
+              fontFamily: "'DM Sans', sans-serif"
             }}>
             <AnimatePresence mode="wait">
               {hired ? (
                 <motion.span key="done" className="flex items-center gap-2"
-                  initial={{ opacity:0, scale:0.8 }} animate={{ opacity:1, scale:1 }}>
-                  <CheckCircle size={22}/> Hired! 🎉
+                  initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}>
+                  <CheckCircle size={22} /> Hired! 🎉
                 </motion.span>
               ) : (
                 <motion.span key="hire" className="flex items-center gap-2"
-                  initial={{ opacity:0, scale:0.8 }} animate={{ opacity:1, scale:1 }}>
-                  <Zap size={22}/> Hire Instantly
+                  initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}>
+                  <Zap size={22} /> Hire Instantly
                 </motion.span>
               )}
             </AnimatePresence>
           </motion.button>
 
           {/* Video call icon */}
-          <motion.button whileTap={{ scale:0.92 }} onClick={onCall}
+          <motion.button whileTap={{ scale: 0.92 }} onClick={onCall}
             className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
-            style={{ background:`${C.teal}12`, border:`1px solid ${C.teal}25` }}>
-            <Video size={22} color={C.teal}/>
+            style={{ background: `${C.teal}12`, border: `1px solid ${C.teal}25` }}>
+            <Video size={22} color={C.teal} />
           </motion.button>
         </div>
       </div>
@@ -550,12 +562,12 @@ const TechnicianProfile = ({ onCall, onBack }) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // PHASE 11  ·  MOCK CALLING UI  (WhatsApp-style)
 // ─────────────────────────────────────────────────────────────────────────────
-const CallingScreen = ({ callee, onEnd }) => {
-  const [muted,      setMuted]      = useState(false);
-  const [speakerOn,  setSpeakerOn]  = useState(false);
-  const [videoOff,   setVideoOff]   = useState(true);
-  const [duration,   setDuration]   = useState(0);
-  const [callState,  setCallState]  = useState("ringing"); // ringing | connected
+export const CallingScreen = ({ callee, onEnd }) => {
+  const [muted, setMuted] = useState(false);
+  const [speakerOn, setSpeakerOn] = useState(false);
+  const [videoOff, setVideoOff] = useState(true);
+  const [duration, setDuration] = useState(0);
+  const [callState, setCallState] = useState("ringing"); // ringing | connected
 
   // Simulate "connected" after 3 seconds
   useEffect(() => {
@@ -570,7 +582,7 @@ const CallingScreen = ({ callee, onEnd }) => {
     return () => clearInterval(t);
   }, [callState]);
 
-  const fmt = (s) => `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
+  const fmt = (s) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 
   const handleEnd = () => {
     onEnd();
@@ -579,52 +591,54 @@ const CallingScreen = ({ callee, onEnd }) => {
   return (
     <motion.div
       className="absolute inset-0 z-50 flex flex-col"
-      initial={{ y:"100%", opacity:0 }}
-      animate={{ y:0, opacity:1 }}
-      exit={{ y:"100%", opacity:0 }}
-      transition={{ type:"spring", stiffness:300, damping:38 }}
+      initial={{ y: "100%", opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      exit={{ y: "100%", opacity: 0 }}
+      transition={{ type: "spring", stiffness: 300, damping: 38 }}
     >
       {/* ── Full-screen blurred "profile photo" background ── */}
       <div className="absolute inset-0">
         {/* Simulated blurred avatar — deep gradient + geometric noise */}
         <div className="absolute inset-0"
-          style={{ background:"linear-gradient(160deg, #0F2744 0%, #1A4A3A 40%, #0D3030 100%)" }}/>
+          style={{ background: "linear-gradient(160deg, #0F2744 0%, #1A4A3A 40%, #0D3030 100%)" }} />
 
         {/* Blurred shape blobs simulating a blurred portrait */}
         <svg className="absolute inset-0 w-full h-full" viewBox="0 0 430 932"
           xmlns="http://www.w3.org/2000/svg" opacity="0.35">
           <defs>
-            <filter id="blur1"><feGaussianBlur stdDeviation="48"/></filter>
+            <filter id="blur1"><feGaussianBlur stdDeviation="48" /></filter>
           </defs>
-          <ellipse cx="215" cy="280" rx="110" ry="130" fill={C.teal}  filter="url(#blur1)"/>
-          <ellipse cx="200" cy="460" rx="130" ry="90"  fill="#0D9488" filter="url(#blur1)"/>
-          <ellipse cx="215" cy="180" rx="70"  rx="70"  ry="80"  fill="#1E8A7A" filter="url(#blur1)"/>
+          <ellipse cx="215" cy="280" rx="110" ry="130" fill={C.teal} filter="url(#blur1)" />
+          <ellipse cx="200" cy="460" rx="130" ry="90" fill="#0D9488" filter="url(#blur1)" />
+          <ellipse cx="215" cy="180" rx="70" ry="80" fill="#1E8A7A" filter="url(#blur1)" />
         </svg>
 
         {/* Dark overlay for text legibility */}
-        <div className="absolute inset-0" style={{ background:"rgba(8,20,40,0.62)" }}/>
+        <div className="absolute inset-0" style={{ background: "rgba(8,20,40,0.62)" }} />
       </div>
 
-      <StatusBar dark/>
+      <StatusBar dark />
 
       {/* ── Top Section: Callee info ── */}
       <div className="relative z-10 flex flex-col items-center pt-12 px-5">
         {/* Avatar */}
         <motion.div
           animate={callState === "ringing"
-            ? { boxShadow:["0 0 0 0px rgba(13,148,136,0.5)","0 0 0 28px rgba(13,148,136,0)"] }
-            : { boxShadow:"none" }
+            ? { boxShadow: ["0 0 0 0px rgba(13,148,136,0.5)", "0 0 0 28px rgba(13,148,136,0)"] }
+            : { boxShadow: "none" }
           }
-          transition={{ duration:1.4, repeat:Infinity }}
+          transition={{ duration: 1.4, repeat: Infinity }}
           className="w-28 h-28 rounded-full border-4 flex items-center justify-center mb-5 font-black text-5xl text-white"
-          style={{ background:`linear-gradient(135deg, ${C.teal}, #0F766E)`,
-            borderColor:"rgba(255,255,255,0.25)" }}>
+          style={{
+            background: `linear-gradient(135deg, ${C.teal}, #0F766E)`,
+            borderColor: "rgba(255,255,255,0.25)"
+          }}>
           R
         </motion.div>
 
         {/* Name */}
         <h1 className="font-black text-3xl text-white mb-1"
-          style={{ fontFamily:"'DM Sans', sans-serif" }}>
+          style={{ fontFamily: "'DM Sans', sans-serif" }}>
           {callee}
         </h1>
         <p className="text-white/60 text-sm mb-3">Senior MRI Technician</p>
@@ -633,33 +647,33 @@ const CallingScreen = ({ callee, onEnd }) => {
         <AnimatePresence mode="wait">
           {callState === "ringing" ? (
             <motion.div key="ringing" className="flex items-center gap-2"
-              initial={{ opacity:0, y:6 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0, y:-6 }}>
+              initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}>
               {/* Three pulsing dots */}
               <div className="flex items-center gap-1">
-                {[0,0.2,0.4].map((d,i) => (
+                {[0, 0.2, 0.4].map((d, i) => (
                   <motion.span key={i}
                     className="w-2 h-2 rounded-full"
-                    style={{ background:"rgba(255,255,255,0.7)" }}
-                    animate={{ scale:[1, 1.5, 1], opacity:[0.5, 1, 0.5] }}
-                    transition={{ duration:1, repeat:Infinity, delay:d }}
+                    style={{ background: "rgba(255,255,255,0.7)" }}
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+                    transition={{ duration: 1, repeat: Infinity, delay: d }}
                   />
                 ))}
               </div>
               <motion.span
                 className="text-white/80 text-base font-semibold"
-                animate={{ opacity:[0.5, 1, 0.5] }}
-                transition={{ duration:1.4, repeat:Infinity }}
+                animate={{ opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 1.4, repeat: Infinity }}
               >
                 Calling {callee}…
               </motion.span>
             </motion.div>
           ) : (
             <motion.div key="connected"
-              initial={{ opacity:0, scale:0.85 }} animate={{ opacity:1, scale:1 }}
+              initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }}
               className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"/>
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span className="text-emerald-400 font-black text-base"
-                style={{ fontFamily:"'DM Mono', monospace" }}>
+                style={{ fontFamily: "'DM Mono', monospace" }}>
                 {fmt(duration)}
               </span>
             </motion.div>
@@ -671,21 +685,21 @@ const CallingScreen = ({ callee, onEnd }) => {
       <div className="relative z-10 flex-1 flex items-center justify-center">
         {callState === "ringing" && (
           <div className="relative flex items-center justify-center">
-            {[1,2,3].map(i => (
+            {[1, 2, 3].map(i => (
               <motion.div key={i}
                 className="absolute rounded-full border"
-                style={{ borderColor:"rgba(13,148,136,0.25)", width:80, height:80 }}
-                animate={{ scale:[1, 4], opacity:[0.6, 0] }}
-                transition={{ duration:2.5, repeat:Infinity, delay:i*0.7 }}
+                style={{ borderColor: "rgba(13,148,136,0.25)", width: 80, height: 80 }}
+                animate={{ scale: [1, 4], opacity: [0.6, 0] }}
+                transition={{ duration: 2.5, repeat: Infinity, delay: i * 0.7 }}
               />
             ))}
           </div>
         )}
         {callState === "connected" && (
-          <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             className="flex flex-col items-center gap-2 px-6 py-4 rounded-3xl"
-            style={{ background:"rgba(255,255,255,0.07)", backdropFilter:"blur(12px)" }}>
-            <Activity size={22} color={C.teal}/>
+            style={{ background: "rgba(255,255,255,0.07)", backdropFilter: "blur(12px)" }}>
+            <Activity size={22} color={C.teal} />
             <p className="text-white/60 text-xs">Voice call encrypted</p>
           </motion.div>
         )}
@@ -694,12 +708,14 @@ const CallingScreen = ({ callee, onEnd }) => {
       {/* ── Bottom Controls — Floating Pill ── */}
       <div className="relative z-10 pb-14 px-5">
         <motion.div
-          initial={{ y: 60, opacity:0 }} animate={{ y:0, opacity:1 }}
-          transition={{ delay:0.3, type:"spring", stiffness:300 }}
+          initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.3, type: "spring", stiffness: 300 }}
           className="rounded-3xl px-6 py-5 flex items-center justify-between"
-          style={{ background:"rgba(15,25,50,0.72)", backdropFilter:"blur(24px)",
-            border:"1px solid rgba(255,255,255,0.08)",
-            boxShadow:"0 24px 60px rgba(0,0,0,0.5)" }}>
+          style={{
+            background: "rgba(15,25,50,0.72)", backdropFilter: "blur(24px)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            boxShadow: "0 24px 60px rgba(0,0,0,0.5)"
+          }}>
 
           {/* Speaker */}
           <ControlBtn
@@ -730,17 +746,19 @@ const CallingScreen = ({ callee, onEnd }) => {
 
           {/* ── End Call ── */}
           <motion.button
-            whileTap={{ scale:0.88 }}
+            whileTap={{ scale: 0.88 }}
             onClick={handleEnd}
             className="flex flex-col items-center gap-1.5"
           >
             <motion.div
-              animate={{ scale:[1, 1.07, 1] }}
-              transition={{ duration:1.6, repeat:Infinity }}
+              animate={{ scale: [1, 1.07, 1] }}
+              transition={{ duration: 1.6, repeat: Infinity }}
               className="w-16 h-16 rounded-full flex items-center justify-center shadow-xl"
-              style={{ background:"linear-gradient(135deg, #EF4444, #DC2626)",
-                boxShadow:"0 8px 24px rgba(239,68,68,0.55)" }}>
-              <PhoneOff size={24} color="white"/>
+              style={{
+                background: "linear-gradient(135deg, #EF4444, #DC2626)",
+                boxShadow: "0 8px 24px rgba(239,68,68,0.55)"
+              }}>
+              <PhoneOff size={24} color="white" />
             </motion.div>
             <span className="text-white/60 text-[10px] font-bold">End</span>
           </motion.button>
@@ -751,13 +769,15 @@ const CallingScreen = ({ callee, onEnd }) => {
 };
 
 // Small control button helper
-const ControlBtn = ({ icon:Icon, label, active, activeColor, onClick }) => (
-  <motion.button whileTap={{ scale:0.88 }} onClick={onClick}
+const ControlBtn = ({ icon: Icon, label, active, activeColor, onClick }) => (
+  <motion.button whileTap={{ scale: 0.88 }} onClick={onClick}
     className="flex flex-col items-center gap-1.5">
     <div className="w-12 h-12 rounded-2xl flex items-center justify-center transition-all"
-      style={{ background: active ? `${activeColor}28` : "rgba(255,255,255,0.10)",
-        border: active ? `1.5px solid ${activeColor}60` : "1.5px solid rgba(255,255,255,0.08)" }}>
-      <Icon size={20} color={active ? activeColor : "rgba(255,255,255,0.80)"} strokeWidth={1.8}/>
+      style={{
+        background: active ? `${activeColor}28` : "rgba(255,255,255,0.10)",
+        border: active ? `1.5px solid ${activeColor}60` : "1.5px solid rgba(255,255,255,0.08)"
+      }}>
+      <Icon size={20} color={active ? activeColor : "rgba(255,255,255,0.80)"} strokeWidth={1.8} />
     </div>
     <span className="text-[10px] font-bold" style={{ color: active ? activeColor : "rgba(255,255,255,0.55)" }}>
       {label}
@@ -778,7 +798,7 @@ export default function MedShiftProfiles() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background:"#0A0F1C" }}>
+    <div className="min-h-screen flex items-center justify-center" style={{ background: "#0A0F1C" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&family=DM+Mono:wght@400;500;600&display=swap');
         *{-webkit-tap-highlight-color:transparent;box-sizing:border-box;}
@@ -786,24 +806,24 @@ export default function MedShiftProfiles() {
       `}</style>
 
       <div className="relative overflow-hidden shadow-2xl"
-        style={{ width:"100%", maxWidth:430, minHeight:"100vh", background:C.pearl, fontFamily:"'DM Sans', sans-serif" }}>
+        style={{ width: "100%", maxWidth: 430, minHeight: "100vh", background: C.pearl, fontFamily: "'DM Sans', sans-serif" }}>
 
         {/* ── Menu / Landing ── */}
         <AnimatePresence>
           {screen === "menu" && (
             <motion.div key="menu"
               className="flex flex-col h-screen"
-              initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}>
-              <StatusBar/>
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <StatusBar />
               <div className="flex-1 flex flex-col justify-center px-6 gap-6">
                 {/* Header */}
                 <div className="text-center mb-4">
                   <div className="w-14 h-14 rounded-2xl mx-auto flex items-center justify-center mb-4"
-                    style={{ background:C.blue }}>
-                    <Activity size={26} color="white" strokeWidth={2.5}/>
+                    style={{ background: C.blue }}>
+                    <Activity size={26} color="white" strokeWidth={2.5} />
                   </div>
-                  <h1 className="font-black text-2xl" style={{ color:C.blue }}>
-                    Med<span style={{ color:C.teal }}>Shift</span>
+                  <h1 className="font-black text-2xl" style={{ color: C.blue }}>
+                    Med<span style={{ color: C.teal }}>Shift</span>
                   </h1>
                   <p className="text-slate-400 text-sm mt-1">Phase 10 & 11 · Profile + Calling Demo</p>
                 </div>
@@ -811,49 +831,51 @@ export default function MedShiftProfiles() {
                 {/* Option cards */}
                 {[
                   {
-                    id:"hospital",
-                    title:"Hospital Manager Profile",
-                    sub:"Viewed by a Technician",
-                    icon:Briefcase, color:C.blue,
-                    badge:"Phase 10-A"
+                    id: "hospital",
+                    title: "Hospital Manager Profile",
+                    sub: "Viewed by a Technician",
+                    icon: Briefcase, color: C.blue,
+                    badge: "Phase 10-A"
                   },
                   {
-                    id:"technician",
-                    title:"Technician Profile",
-                    sub:"Viewed by a Manager",
-                    icon:Award, color:C.teal,
-                    badge:"Phase 10-B"
+                    id: "technician",
+                    title: "Technician Profile",
+                    sub: "Viewed by a Manager",
+                    icon: Award, color: C.teal,
+                    badge: "Phase 10-B"
                   },
                   {
-                    id:"calling-demo",
-                    title:"Mock Calling Screen",
-                    sub:"WhatsApp-style call UI",
-                    icon:Phone, color:"#25D366",
-                    badge:"Phase 11"
+                    id: "calling-demo",
+                    title: "Mock Calling Screen",
+                    sub: "WhatsApp-style call UI",
+                    icon: Phone, color: "#25D366",
+                    badge: "Phase 11"
                   },
-                ].map(({ id, title, sub, icon:Icon, color, badge }) => (
-                  <motion.button key={id} whileTap={{ scale:0.97 }}
+                ].map(({ id, title, sub, icon: Icon, color, badge }) => (
+                  <motion.button key={id} whileTap={{ scale: 0.97 }}
                     onClick={() => {
                       if (id === "calling-demo") { setCallCallee("Rahul V."); setScreen("calling"); }
                       else setScreen(id);
                     }}
                     className="w-full flex items-center gap-4 p-4 rounded-2xl text-left"
-                    style={{ background:C.card, border:`1.5px solid ${color}20`,
-                      boxShadow:`0 4px 20px ${color}10` }}>
+                    style={{
+                      background: C.card, border: `1.5px solid ${color}20`,
+                      boxShadow: `0 4px 20px ${color}10`
+                    }}>
                     <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
-                      style={{ background:`${color}12` }}>
-                      <Icon size={22} color={color}/>
+                      style={{ background: `${color}12` }}>
+                      <Icon size={22} color={color} />
                     </div>
                     <div className="flex-1">
-                      <p className="font-black text-base" style={{ color:C.blue }}>{title}</p>
+                      <p className="font-black text-base" style={{ color: C.blue }}>{title}</p>
                       <p className="text-xs text-slate-400 mt-0.5">{sub}</p>
                     </div>
                     <div className="flex flex-col items-end gap-1">
                       <span className="text-[10px] font-black px-2 py-0.5 rounded-full"
-                        style={{ background:`${color}12`, color }}>
+                        style={{ background: `${color}12`, color }}>
                         {badge}
                       </span>
-                      <ChevronRight size={16} color="#CBD5E1"/>
+                      <ChevronRight size={16} color="#CBD5E1" />
                     </div>
                   </motion.button>
                 ))}
@@ -867,17 +889,17 @@ export default function MedShiftProfiles() {
           {screen === "hospital" && (
             <HospitalProfile key="hosp"
               onCall={() => openCall("Dr. A. Sharma")}
-              onBack={() => setScreen("menu")}/>
+              onBack={() => setScreen("menu")} />
           )}
           {screen === "technician" && (
             <TechnicianProfile key="tech"
               onCall={() => openCall("Rahul V.")}
-              onBack={() => setScreen("menu")}/>
+              onBack={() => setScreen("menu")} />
           )}
           {screen === "calling" && (
             <CallingScreen key="call"
               callee={callCallee || "Rahul V."}
-              onEnd={() => setScreen(callCallee === "Dr. A. Sharma" ? "hospital" : "technician")}/>
+              onEnd={() => setScreen(callCallee === "Dr. A. Sharma" ? "hospital" : "technician")} />
           )}
         </AnimatePresence>
       </div>
