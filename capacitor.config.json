@@ -1,5 +1,16 @@
 {
   "appId": "com.medshift.app",
   "appName": "MedShift",
-  "webDir": "dist"
+  "webDir": "dist",
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    }
+  },
+  "server": {
+    "androidScheme": "https",
+    "allowNavigation": [
+      "medshift-backend-3ktw.onrender.com"
+    ]
+  }
 }

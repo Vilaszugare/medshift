@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">MedShift</string>
+    <string name="title_activity_main">MedShift</string>
+    <string name="package_name">com.medshift.app</string>
+    <string name="custom_url_scheme">com.medshift.app</string>
+</resources>
