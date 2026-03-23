@@ -169,7 +169,7 @@ const StatusBar = () => (
   </div>
 );
 
-const TopHeader = ({ role, onBellClick, unreadCount, isDark, toggleDark }) => (
+const TopHeader = ({ role, onBellClick, unreadCount, isDark, toggleDark, isGuest, isAvailable, toggleAvailability }) => (
   <div className="flex-none z-50 sticky top-0 flex items-center justify-between px-3 py-2 w-full"
     style={{ backdropFilter:"blur(12px)", background:"var(--c-nav-bg)",
       borderBottom:"1px solid var(--c-border)" }}>
@@ -181,6 +181,11 @@ const TopHeader = ({ role, onBellClick, unreadCount, isDark, toggleDark }) => (
       <span className="font-black text-sm" style={{ color: C.blue, fontFamily: F.head }}>
         Quick<span style={{ color: C.teal }}>Med</span> Support
       </span>
+      {role === "technician" && !isGuest && (
+        <button onClick={toggleAvailability} className="relative w-9 h-5 ml-2 rounded-full flex items-center px-1 transition-colors shadow-inner" style={{ background: isAvailable ? C.teal : "var(--c-slate-300)" }}>
+          <motion.div className="w-3.5 h-3.5 rounded-full bg-white shadow-sm" animate={{ x: isAvailable ? 16 : 0 }} transition={{ type: "spring", stiffness: 500, damping: 30 }} />
+        </button>
+      )}
     </div>
     <div className="flex items-center gap-2">
       <button onClick={toggleDark} className="relative w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: "var(--c-slate-100)" }}>
@@ -395,9 +400,11 @@ const NotificationCenter = ({ open, onClose, notifications, onMarkAll }) => {
 };
 
 
-const ApplicantsModal = ({ open, onClose, shift, onApplicantAction }) => {
+const ApplicantsModal = ({ open, onClose, shift, onApplicantAction, onFinalize }) => {
   const [applicants, setApplicants] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  const acceptedCount = applicants.filter(a => a.status === "accepted").length;
 
   useEffect(() => {
     if (open && shift) {
@@ -457,6 +464,15 @@ const ApplicantsModal = ({ open, onClose, shift, onApplicantAction }) => {
            </div>
          ))
         }
+      </div>
+      <div className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-slate-100 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+        <button 
+          disabled={acceptedCount === 0}
+          onClick={() => onFinalize(shift.id)}
+          className="w-full py-3.5 rounded-2xl font-black text-white transition-opacity disabled:opacity-50"
+          style={{ background: C.teal }}>
+          Finalize & Assign ({acceptedCount} Tech{acceptedCount !== 1 ? 's' : ''})
+        </button>
       </div>
     </div>
   );
@@ -582,7 +598,15 @@ const ManagerDashboard = ({ shifts, onCreateShift, onViewProfileClick, onComplet
                     </div>
                   ) : (
                     <div className="flex items-center justify-between mb-3 px-1">
-                      <span className="text-xs text-slate-400 font-medium">0 Technicians Accepted</span>
+                      {s.pending_count > 0 ? (
+                        <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded-md">
+                          {s.pending_count} New Applicant{s.pending_count > 1 ? 's' : ''}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-slate-400 font-medium">
+                          {s.accepted_count || 0} Technicians Accepted
+                        </span>
+                      )}
                       <button onClick={() => onViewApplicants?.(s)} className="text-xs font-black px-3 py-1.5 rounded-xl" style={{ background: `${C.amber}15`, color:C.amber }}>Manage Applicants</button>
                     </div>
                   )}
@@ -650,9 +674,8 @@ const ManagerDashboard = ({ shifts, onCreateShift, onViewProfileClick, onComplet
 // ═══════════════════════════════════════════════════════════════════════════════
 // PHASE 14 — TECHNICIAN JOB RADAR
 // ═══════════════════════════════════════════════════════════════════════════════
-const TechRadar = ({ shifts, onHospitalClick, isGuest, onRequireAuth, currentUser }) => {
+const TechRadar = ({ shifts, onHospitalClick, isGuest, onRequireAuth, currentUser, onApplyShift, isAvailable, toggleAvailability }) => {
   const [accepted, setAccepted] = useState({});
-  const [available, setAvailable] = useState(true);
 
   const firstName = currentUser?.full_name?.split(" ")[0] || "Loading...";
 
@@ -671,36 +694,33 @@ const TechRadar = ({ shifts, onHospitalClick, isGuest, onRequireAuth, currentUse
         {/* Availability toggle */}
         <motion.button
           whileTap={{ scale:0.97 }}
-          onClick={() => {
-            if (isGuest) { onRequireAuth(); return; }
-            setAvailable(!available);
-          }}
+          onClick={toggleAvailability}
           className="w-full mt-4 rounded-2xl px-5 py-4 flex items-center justify-between"
           style={{
-            background: available
+            background: isAvailable
               ? `linear-gradient(135deg, ${C.teal}, #0F766E)`
               : `linear-gradient(135deg, ${C.blue}, #1E4A7A)`,
-            boxShadow: available ? `0 8px 28px ${C.teal}40` : `0 8px 28px ${C.blue}28`
+            boxShadow: isAvailable ? `0 8px 28px ${C.teal}40` : `0 8px 28px ${C.blue}28`
           }}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/20">
-              {available
+              {isAvailable
                 ? <Radio size={20} color="white" className="animate-pulse"/>
                 : <Radio size={20} color="rgba(255,255,255,0.5)"/>}
             </div>
             <div className="text-left">
               <p className="text-white font-black text-base" style={{ fontFamily:F.head }}>
-                {available ? "Available for Emergency Calls" : "Go Available"}
+                {isAvailable ? "Available for Emergency Calls" : "Go Available"}
               </p>
               <p className="text-white/65 text-xs">
-                {available ? "Hospitals can see you nearby" : "Currently off-duty"}
+                {isAvailable ? "Hospitals can see you nearby" : "Currently off-duty"}
               </p>
             </div>
           </div>
           <div className="w-12 h-6 rounded-full px-1 flex items-center transition-all"
-            style={{ background: available ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.1)" }}>
+            style={{ background: isAvailable ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.1)" }}>
             <motion.div className="w-4 h-4 rounded-full bg-white"
-              animate={{ x: available ? 24 : 0 }}
+              animate={{ x: isAvailable ? 24 : 0 }}
               transition={{ type:"spring", stiffness:500, damping:30 }}/>
           </div>
         </motion.button>
@@ -796,9 +816,12 @@ const TechRadar = ({ shifts, onHospitalClick, isGuest, onRequireAuth, currentUse
                 </div>
                 <motion.button
                   whileTap={{ scale:0.93 }}
-                  onClick={() => {
+                  onClick={async () => {
                     if (isGuest) { onRequireAuth(); return; }
-                    setAccepted(a => ({ ...a, [s.id]: !a[s.id] }));
+                    if (!accepted[s.id]) {
+                      const success = await onApplyShift?.(s.id);
+                      if (success) setAccepted(a => ({ ...a, [s.id]: true }));
+                    }
                   }}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-2xl font-black text-sm text-white"
                   style={{
@@ -2301,6 +2324,7 @@ const CreatePostSheet = ({ open, onClose, onSubmit, currentUser }) => {
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function MedShiftFull() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAvailable, setIsAvailable] = useState(false);
   const [isGuest, setIsGuest] = useState(false);
   const [showTechAuth, setShowTechAuth] = useState(false);
   const [editProfileOpen, setEditProfileOpen] = useState(false);
@@ -2312,6 +2336,28 @@ export default function MedShiftFull() {
   const handleRequireAuth = (mode = "login") => {
     setTechAuthMode(mode);
     setShowTechAuth(true);
+  };
+
+  const toggleAvailability = async () => {
+    if (isGuest || !currentUser?.id) { handleRequireAuth(); return; }
+    const newState = !isAvailable;
+    setIsAvailable(newState); // Optimistic UI update
+    try {
+      const res = await fetch(`${API_BASE}/api/technician/${currentUser.id}/availability`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_available: newState })
+      });
+      if (!res.ok) throw new Error("Failed to update status");
+      // Update local context
+      const updatedUser = { ...currentUser, is_available: newState };
+      setCurrentUser(updatedUser);
+      localStorage.setItem("medshift_user", JSON.stringify(updatedUser));
+    } catch (e) {
+      console.error(e);
+      setIsAvailable(!newState); // Revert on failure
+      alert("Network error: Could not update availability.");
+    }
   };
 
   const handleUpdateTechProfile = async (formData) => {
@@ -2404,7 +2450,9 @@ export default function MedShiftFull() {
     if (savedRole && savedUser) {
       setRole(savedRole);
       try {
-        setCurrentUser(JSON.parse(savedUser));
+        const parsedUser = JSON.parse(savedUser);
+        setCurrentUser(parsedUser);
+        setIsAvailable(parsedUser.is_available || false);
       } catch(e) {}
       setIsAuthenticated(true);
       setActiveTab("home");
@@ -2718,19 +2766,22 @@ export default function MedShiftFull() {
   };
 
   const handleApplyShift = async (shiftId) => {
-    if (!currentUser || !currentUser.id) return alert("Please log in again.");
+    if (!currentUser || !currentUser.id) { alert("Please log in again."); return false; }
     try {
       const res = await fetch(`${API_BASE}/api/technician/shifts/${shiftId}/apply`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ technician_id: currentUser.id })
       });
       if (!res.ok) {
         const d = await res.json();
         throw new Error(d.detail || "Failed to apply");
       }
       alert("Applied successfully! The manager will review your application.");
+      return true;
     } catch (err) {
-      console.error(err);
-      alert(err.message || "Backend unreachable. Local mode mock apply.");
+      alert(err.message || "Failed to apply.");
+      return false;
     }
   };
 
@@ -2759,7 +2810,7 @@ export default function MedShiftFull() {
 
   const renderTab = () => {
     switch (activeTab) {
-      case "home":      return role === "manager" ? <ManagerDashboard shifts={managerShifts} onCreateShift={() => setCreateShiftOpen(true)} onViewProfileClick={(tech) => role === 'manager' && setSelectedTechnician(tech || true)} onCompleteShift={handleCompleteShift} onCancelShift={handleCancelShift} currentUser={currentUser} onViewApplicants={(shift) => setSelectedShiftForApplicants(shift)} /> : <TechRadar shifts={techShifts} onHospitalClick={(name) => role === 'technician' && setSelectedHospital(name)} isGuest={isGuest} onRequireAuth={handleRequireAuth} currentUser={currentUser} onApplyShift={handleApplyShift} />;
+      case "home":      return role === "manager" ? <ManagerDashboard shifts={managerShifts} onCreateShift={() => setCreateShiftOpen(true)} onViewProfileClick={(tech) => role === 'manager' && setSelectedTechnician(tech || true)} onCompleteShift={handleCompleteShift} onCancelShift={handleCancelShift} currentUser={currentUser} onViewApplicants={(shift) => setSelectedShiftForApplicants(shift)} /> : <TechRadar shifts={techShifts} onHospitalClick={(name) => role === 'technician' && setSelectedHospital(name)} isGuest={isGuest} onRequireAuth={handleRequireAuth} currentUser={currentUser} onApplyShift={handleApplyShift} isAvailable={isAvailable} toggleAvailability={toggleAvailability} />;
       case "shifts":    return <ShiftsTab role={role} managerShifts={managerShifts} techShifts={techShifts} isGuest={isGuest} onRequireAuth={handleRequireAuth} currentUser={currentUser}/>;
       case "community": return <CommunityFeed posts={posts} onAuthorClick={(name) => role === 'technician' && setSelectedHospital(name)} />;
       case "profile":
@@ -2802,6 +2853,9 @@ export default function MedShiftFull() {
         unreadCount={unread}
         isDark={isDark}
         toggleDark={() => setIsDark(!isDark)}
+        isGuest={isGuest}
+        isAvailable={isAvailable}
+        toggleAvailability={toggleAvailability}
       />
 
       {/* Main content area */}
@@ -2916,9 +2970,11 @@ export default function MedShiftFull() {
                     id: userObj.id, 
                     full_name: userObj.full_name, 
                     role: userObj.role,
-                    email: userObj.email 
+                    email: userObj.email,
+                    is_available: userObj.is_available || false
                   };
                   setCurrentUser(newUserState);
+                  setIsAvailable(newUserState.is_available);
                   localStorage.setItem("medshift_user", JSON.stringify(newUserState));
                   localStorage.setItem("medshift_role", userObj.role);
                 } else {
@@ -2933,7 +2989,28 @@ export default function MedShiftFull() {
           open={!!selectedShiftForApplicants} 
           shift={selectedShiftForApplicants} 
           onClose={() => setSelectedShiftForApplicants(null)} 
-          onApplicantAction={() => window.location.reload()} 
+          onApplicantAction={() => {
+            if (role === "manager" && currentUser?.id) {
+              fetch(`${API_BASE}/api/dashboard/manager?manager_id=${currentUser.id}`)
+                .then(r => r.json())
+                .then(data => setManagerShifts(data.posted_shifts))
+                .catch(e => console.error(e));
+            }
+          }}
+          onFinalize={async (shiftId) => {
+            try {
+              const res = await fetch(`${API_BASE}/api/shifts/${shiftId}/finalize`, { method: "PUT" });
+              if (res.ok) {
+                setSelectedShiftForApplicants(null);
+                if (role === "manager" && currentUser?.id) {
+                  fetch(`${API_BASE}/api/dashboard/manager?manager_id=${currentUser.id}`)
+                    .then(r => r.json())
+                    .then(data => setManagerShifts(data.posted_shifts))
+                    .catch(e => console.error(e));
+                }
+              }
+            } catch (e) { console.error(e); }
+          }}
         />
     </div>
   );

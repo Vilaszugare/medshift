@@ -13,6 +13,18 @@ def get_current_tech_id(db: Session = Depends(get_db)) -> str:
         raise HTTPException(status_code=404, detail="No technician found in database to mock.")
     return str(tech.id)
 
+@router.put("/{technician_id}/availability")
+def update_availability(technician_id: UUID, payload: schemas.AvailabilityUpdate, db: Session = Depends(get_db)):
+    tech = db.query(models.TechnicianProfile).filter(models.TechnicianProfile.id == technician_id).first()
+    if not tech:
+        raise HTTPException(status_code=404, detail="Technician not found")
+        
+    tech.is_available = payload.is_available
+    db.commit()
+    db.refresh(tech)
+    
+    return {"message": "Availability updated successfully", "is_available": tech.is_available}
+
 @router.put("/profile")
 def update_technician_profile(profile_data: schemas.TechnicianProfileUpdate, db: Session = Depends(get_db), user_id: str = Depends(get_current_tech_id)):
     tech = db.query(models.TechnicianProfile).filter(models.TechnicianProfile.id == user_id).first()
@@ -67,7 +79,7 @@ def update_technician_profile(profile_data: schemas.TechnicianProfileUpdate, db:
     }
 
 @router.post("/shifts/{shift_id}/apply")
-def apply_for_shift(shift_id: UUID, db: Session = Depends(get_db), user_id: str = Depends(get_current_tech_id)):
+def apply_for_shift(shift_id: UUID, apply_data: schemas.ShiftApplySchema, db: Session = Depends(get_db)):
     shift = db.query(models.Shift).filter(models.Shift.id == shift_id).first()
     if not shift:
         raise HTTPException(status_code=404, detail="Shift not found")
@@ -75,7 +87,7 @@ def apply_for_shift(shift_id: UUID, db: Session = Depends(get_db), user_id: str 
     # check if already applied
     existing = db.query(models.ShiftAssignment).filter(
         models.ShiftAssignment.shift_id == shift_id,
-        models.ShiftAssignment.technician_id == UUID(user_id)
+        models.ShiftAssignment.technician_id == apply_data.technician_id
     ).first()
     
     if existing:
@@ -83,7 +95,7 @@ def apply_for_shift(shift_id: UUID, db: Session = Depends(get_db), user_id: str 
         
     new_assignment = models.ShiftAssignment(
         shift_id=shift_id,
-        technician_id=UUID(user_id),
+        technician_id=apply_data.technician_id,
         status=models.ShiftAssignmentStatus.pending
     )
     db.add(new_assignment)

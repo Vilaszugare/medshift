@@ -4,6 +4,8 @@ from uuid import UUID
 import uuid
 
 from database import get_db
+from datetime import datetime
+
 import models
 import schemas
 
@@ -27,6 +29,35 @@ def complete_shift(shift_id: UUID, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(shift)
     return {"message": "Shift marked as complete", "status": shift.status.value}
+
+@router.put("/shifts/{shift_id}/finalize")
+def finalize_shift(shift_id: UUID, db: Session = Depends(get_db)):
+    shift = db.query(models.Shift).filter(models.Shift.id == shift_id).first()
+    if not shift:
+        raise HTTPException(status_code=404, detail="Shift not found")
+        
+    # Check if there are accepted users
+    accepted_count = db.query(models.ShiftAssignment).filter(
+        models.ShiftAssignment.shift_id == shift_id,
+        models.ShiftAssignment.status == models.ShiftAssignmentStatus.accepted
+    ).count()
+    
+    if accepted_count == 0:
+        raise HTTPException(status_code=400, detail="Cannot finalize shift without accepted technicians")
+        
+    shift.status = models.ShiftStatus.filled
+    
+    # Reject remaining pending assignments
+    pending_assignments = db.query(models.ShiftAssignment).filter(
+        models.ShiftAssignment.shift_id == shift_id,
+        models.ShiftAssignment.status == models.ShiftAssignmentStatus.pending
+    ).all()
+    for pa in pending_assignments:
+        pa.status = models.ShiftAssignmentStatus.rejected
+        
+    db.commit()
+    db.refresh(shift)
+    return {"message": "Shift finalized and assigned", "status": shift.status.value, "accepted_count": accepted_count}
 
 @router.put("/shifts/{shift_id}/cancel")
 def cancel_shift(shift_id: UUID, db: Session = Depends(get_db)):
@@ -200,6 +231,7 @@ def accept_applicant(shift_id: UUID, technician_id: UUID, db: Session = Depends(
         raise HTTPException(status_code=400, detail=f"Shift is already full (max {max_techs})")
 
     assignment.status = models.ShiftAssignmentStatus.accepted
+    assignment.accepted_at = datetime.utcnow()
     db.commit()
 
     if accepted_count + 1 >= max_techs:

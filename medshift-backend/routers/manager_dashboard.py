@@ -52,6 +52,11 @@ def get_manager_dashboard(db: Session = Depends(get_db), user_id: str = Depends(
             models.ShiftAssignment.status == models.ShiftAssignmentStatus.accepted
         ).all()
         
+        pending_count = db.query(models.ShiftAssignment).filter(
+            models.ShiftAssignment.shift_id == s.id,
+            models.ShiftAssignment.status == models.ShiftAssignmentStatus.pending
+        ).count()
+
         tech_name = None
         tech_phone = None
         tech_id = None
@@ -88,6 +93,7 @@ def get_manager_dashboard(db: Session = Depends(get_db), user_id: str = Depends(
             technician_name=tech_name,
             technician_phone=tech_phone,
             max_technicians=s.max_technicians or 1,
+            pending_count=pending_count,
             accepted_count=len(assignments),
             accepted_technicians=accepted_techs
         ))

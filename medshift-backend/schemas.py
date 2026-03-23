@@ -6,6 +6,12 @@ from uuid import UUID
 # ==========================================
 # POST SCHEMA DEFINITIONS
 # ==========================================
+class AvailabilityUpdate(BaseModel):
+    is_available: bool
+
+class ShiftApplySchema(BaseModel):
+    technician_id: UUID
+
 class TechnicianRegisterRequest(BaseModel):
     full_name: str
     mobile_number: str
@@ -58,6 +64,7 @@ class ShiftBase(BaseModel):
     technician_name: Optional[str] = None
     technician_phone: Optional[str] = None
     max_technicians: int = 1
+    pending_count: int = 0
     accepted_count: int = 0
     accepted_technicians: List[ShiftApplicantSchema] = []
 
