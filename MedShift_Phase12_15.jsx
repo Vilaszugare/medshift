@@ -2,6 +2,10 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import { HospitalProfile, TechnicianProfile, CallingScreen } from './MedShift_Phase10_11.jsx';
+import CreateShiftSheet from './CreateShiftSheet.jsx';
+import CreatePostSheet from './CreatePostSheet.jsx';
+import QuickInboxModal from './Quick_Inbox.jsx';
+import TechQuickInboxModal from './Tech_Quick_Inbox.jsx';
 import { App as CapacitorApp } from '@capacitor/app';
 import {
   Bell, Home, Calendar, Users, User, ArrowLeft, CheckCircle,
@@ -15,11 +19,14 @@ import {
   ArrowUpRight, ArrowDownLeft, RefreshCw, Eye, Hash,
   UploadCloud, FileBadge,
   ChevronDown, Search, Timer, Cpu, Plus, Image as ImageIcon,
-  Moon, Sun, LogOut, Edit2
+  Moon, Sun, LogOut, Edit2, Trash2
 } from "lucide-react";
 import { Capacitor } from '@capacitor/core';
-// const rawUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
-const rawUrl = import.meta.env.VITE_API_URL || "https://medshift-backend-3ktw.onrender.com";
+// PRODUCTION SERVER (Commented out for local development)
+// const rawUrl = import.meta.env.VITE_API_URL || "https://medshift-backend-3ktw.onrender.com";
+
+// LOCAL DEVELOPMENT SERVER (Active)
+const rawUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
 let processedUrl = rawUrl.endsWith("/") ? rawUrl.slice(0, -1) : rawUrl;
 
 // If running natively on Android emulator, rewrite localhost to the loopback IP
@@ -30,7 +37,7 @@ if (Capacitor.isNativePlatform() && processedUrl.includes("localhost")) {
 const API_BASE = processedUrl;
 
 // ─── PALETTE ─────────────────────────────────────────────────────────────────
-const C = {
+export const C = {
   blue:   "var(--c-blue)",
   teal:   "var(--c-teal)",
   amber:  "var(--c-amber)",
@@ -41,9 +48,9 @@ const C = {
 };
 
 // ─── FONTS ────────────────────────────────────────────────────────────────────
-const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');`;
+export const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');`;
 
-const F = {
+export const F = {
   head: "'Sora', sans-serif",
   mono: "'JetBrains Mono', monospace",
 };
@@ -317,8 +324,6 @@ const NotificationCenter = ({ open, onClose, notifications, onMarkAll }) => {
             initial={{ x:"100%" }} animate={{ x:0 }} exit={{ x:"100%" }}
             transition={{ type:"spring", stiffness:340, damping:38 }}
           >
-            <StatusBar/>
-
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-4"
               style={{ borderBottom:"1px solid #F1F5F9" }}>
@@ -457,8 +462,13 @@ const ApplicantsModal = ({ open, onClose, shift, onApplicantAction, onFinalize }
              </div>
              {a.status === 'pending' && (
                <div className="flex gap-2 mt-3 pt-3 border-t border-slate-50">
-                 <button onClick={() => handleAction(a.technician_id, 'accept')} className="flex-1 flex justify-center items-center bg-teal-600 text-white font-bold py-2.5 rounded-xl text-sm transition-opacity active:opacity-75">Accept</button>
-                 <button onClick={() => handleAction(a.technician_id, 'reject')} className="flex-1 flex justify-center items-center bg-red-100 text-red-600 font-bold py-2.5 rounded-xl text-sm transition-opacity active:opacity-75">Reject</button>
+                 <button type="button" onClick={() => handleAction(a.technician_id, 'accept')} className="flex-1 flex justify-center items-center bg-teal-600 text-white font-bold py-2.5 rounded-xl text-sm transition-opacity active:opacity-75">Accept</button>
+                 <button type="button" onClick={() => handleAction(a.technician_id, 'reject')} className="flex-1 flex justify-center items-center bg-red-100 text-red-600 font-bold py-2.5 rounded-xl text-sm transition-opacity active:opacity-75">Reject</button>
+               </div>
+             )}
+             {a.status === 'accepted' && (
+               <div className="flex gap-2 mt-3 pt-3 border-t border-slate-50">
+                 <button type="button" onClick={() => handleAction(a.technician_id, 'reject')} className="flex-1 flex justify-center items-center bg-red-50 text-red-600 font-bold py-2.5 rounded-xl text-sm transition-opacity active:opacity-75">Remove</button>
                </div>
              )}
            </div>
@@ -481,7 +491,7 @@ const ApplicantsModal = ({ open, onClose, shift, onApplicantAction, onFinalize }
 // ═══════════════════════════════════════════════════════════════════════════════
 // PHASE 13 — MANAGER DASHBOARD
 // ═══════════════════════════════════════════════════════════════════════════════
-const ManagerDashboard = ({ shifts, onCreateShift, onViewProfileClick, onCompleteShift, onCancelShift, currentUser, onViewApplicants }) => {
+const ManagerDashboard = ({ shifts, onCreateShift, onViewProfileClick, onCompleteShift, onCancelShift, onArchiveShift, currentUser, onViewApplicants, onInboxClick, unreadMessageCount = 0, totalMessageCount = 0 }) => {
   const [boosted, setBoosted] = useState(false);
 
   return (
@@ -499,17 +509,27 @@ const ManagerDashboard = ({ shifts, onCreateShift, onViewProfileClick, onComplet
         {/* Stats strip */}
         <div className="grid grid-cols-3 gap-2.5 mt-4">
           {[
-            { label:"Active Posts", value:"2",      icon:Radio,       color:C.amber  },
-            { label:"Total Hires",  value:"94",     icon:Users,       color:C.teal   },
-            { label:"Avg Rating",   value:"4.8★",   icon:Star,        color:"#F59E0B" },
-          ].map(({ label, value, icon:Icon, color }) => (
-            <div key={label} className="rounded-2xl p-3 text-center"
-              style={{ background:`${color}0D`, border:`1px solid ${color}22` }}>
-              <Icon size={13} color={color} className="mx-auto mb-1"/>
-              <p className="font-black text-sm" style={{ color, fontFamily:F.mono }}>{value}</p>
-              <p className="text-[10px] text-slate-400">{label}</p>
-            </div>
-          ))}
+            { label:"Active Posts", value:"2",      icon:Radio,          color:C.amber,  onClick: null },
+            { label:"Total Hires",  value:"94",     icon:Users,          color:C.teal,   onClick: null },
+            {
+              label: "Quick Inbox",
+              value: unreadMessageCount > 0 ? `${unreadMessageCount} New` : `${totalMessageCount}`,
+              icon: MessageCircle,
+              color: unreadMessageCount > 0 ? C.amber : C.teal,
+              onClick: onInboxClick,
+            },
+          ].map(({ label, value, icon:Icon, color, onClick }) => {
+            const Tag = onClick ? "button" : "div";
+            return (
+              <Tag key={label} onClick={onClick || undefined}
+                className={`rounded-2xl p-3 text-center${onClick ? " active:scale-95 transition-transform" : ""}`}
+                style={{ background:`${color}0D`, border:`1px solid ${color}22` }}>
+                <Icon size={13} color={color} className="mx-auto mb-1"/>
+                <p className="font-black text-sm" style={{ color, fontFamily:F.mono }}>{value}</p>
+                <p className="text-[10px] text-slate-400">{label}</p>
+              </Tag>
+            );
+          })}
         </div>
       </div>
 
@@ -525,7 +545,7 @@ const ManagerDashboard = ({ shifts, onCreateShift, onViewProfileClick, onComplet
           </button>
         </div>
 
-        {shifts.map((s, i) => {
+        {shifts.filter(s => !['archived', 'completed', 'cancelled'].includes(s.status)).map((s, i) => {
           const Icon = s.icon;
           return (
             <motion.div key={s.id}
@@ -550,12 +570,22 @@ const ManagerDashboard = ({ shifts, onCreateShift, onViewProfileClick, onComplet
                     {s.statusLabel}
                   </span>
                 </span>
-                {s.status === "matched" && (
-                  <span className="ml-auto flex items-center gap-1 text-xs font-bold"
-                    style={{ color:C.green }}>
-                    <CheckCircle size={12}/> Confirmed
-                  </span>
-                )}
+                <div className="ml-auto flex items-center gap-3">
+                  {s.status === "matched" && (
+                    <span className="flex items-center gap-1 text-xs font-bold"
+                      style={{ color:C.green }}>
+                      <CheckCircle size={12}/> Confirmed
+                    </span>
+                  )}
+                  {s.status !== "searching" && s.status !== "open" && (
+                    <button onClick={(e) => { e.stopPropagation(); onCompleteShift?.(s.id); }} className="p-1 rounded-md transition-colors hover:bg-slate-200" title="Archive/Complete Shift">
+                      <Bookmark size={14} color="#64748B"/>
+                    </button>
+                  )}
+                  <button onClick={(e) => { e.stopPropagation(); onCancelShift?.(s.id); }} className="p-1 rounded-md transition-colors hover:bg-red-50" title="Cancel/Delete Shift">
+                    <Trash2 size={13} color="#EF4444"/>
+                  </button>
+                </div>
               </div>
 
               <div className="p-4">
@@ -589,7 +619,7 @@ const ManagerDashboard = ({ shifts, onCreateShift, onViewProfileClick, onComplet
                       <div className="flex flex-col">
                         <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Accepted Technicians</span>
                         <div className="text-sm font-black text-left flex items-center gap-1.5 mt-0.5" style={{ color: C.teal, fontFamily:F.head }}>
-                          {s.accepted_count} / {s.max_technicians || 1} Filled
+                          {s.accepted_count} Filled
                         </div>
                       </div>
                       <button onClick={() => onViewApplicants?.(s)} className="px-4 py-2 rounded-full text-xs font-bold shadow-sm" style={{ background: C.teal, color: 'white' }}>
@@ -674,7 +704,7 @@ const ManagerDashboard = ({ shifts, onCreateShift, onViewProfileClick, onComplet
 // ═══════════════════════════════════════════════════════════════════════════════
 // PHASE 14 — TECHNICIAN JOB RADAR
 // ═══════════════════════════════════════════════════════════════════════════════
-const TechRadar = ({ shifts, onHospitalClick, isGuest, onRequireAuth, currentUser, onApplyShift, isAvailable, toggleAvailability }) => {
+const TechRadar = ({ shifts, onHospitalClick, isGuest, onRequireAuth, currentUser, onApplyShift, isAvailable, toggleAvailability, unreadTechCount = 0, totalTechCount = 0, onInboxClick }) => {
   const [accepted, setAccepted] = useState({});
 
   const firstName = currentUser?.full_name?.split(" ")[0] || "Loading...";
@@ -728,17 +758,27 @@ const TechRadar = ({ shifts, onHospitalClick, isGuest, onRequireAuth, currentUse
         {/* Stats */}
         <div className="grid grid-cols-3 gap-2.5 mt-4">
           {[
-            { label:"Rating",    value:"4.9★", icon:Star,       color:"#F59E0B" },
-            { label:"Shifts",    value:"42",   icon:Calendar,   color:C.teal    },
-            { label:"Earned",    value:"₹12k", icon:TrendingUp, color:"#8B5CF6" },
-          ].map(({ label, value, icon:Icon, color }) => (
-            <div key={label} className="rounded-2xl p-3 text-center"
-              style={{ background:`${color}0D`, border:`1px solid ${color}22` }}>
-              <Icon size={13} color={color} className="mx-auto mb-1"/>
-              <p className="font-black text-sm" style={{ color, fontFamily:F.mono }}>{value}</p>
-              <p className="text-[10px] text-slate-400">{label}</p>
-            </div>
-          ))}
+            { label:"Rating",      value:"4.9★",                                                  icon:Star,          color:"#F59E0B",  onClick: null },
+            { label:"Shifts",      value:"42",                                                    icon:Calendar,      color:C.teal,    onClick: null },
+            {
+              label: "Quick Inbox",
+              value: unreadTechCount > 0 ? `${unreadTechCount} New` : `${totalTechCount}`,
+              icon: MessageCircle,
+              color: unreadTechCount > 0 ? C.amber : C.teal,
+              onClick: onInboxClick,
+            },
+          ].map(({ label, value, icon:Icon, color, onClick }) => {
+            const Tag = onClick ? "button" : "div";
+            return (
+              <Tag key={label} onClick={onClick || undefined}
+                className={`rounded-2xl p-3 text-center${onClick ? " active:scale-95 transition-transform" : ""}`}
+                style={{ background:`${color}0D`, border:`1px solid ${color}22` }}>
+                <Icon size={13} color={color} className="mx-auto mb-1"/>
+                <p className="font-black text-sm" style={{ color, fontFamily:F.mono }}>{value}</p>
+                <p className="text-[10px] text-slate-400">{label}</p>
+              </Tag>
+            );
+          })}
         </div>
       </div>
 
@@ -1753,7 +1793,7 @@ const ShiftsTab = ({ role, managerShifts, techShifts, isGuest, onRequireAuth, cu
   const shifts = baseShifts.filter(s => {
       const st = s.status?.toLowerCase();
       if (activeFilter === "Active/Upcoming") return ["open", "searching", "filled", "matched"].includes(st);
-      if (activeFilter === "Completed") return st === "completed";
+      if (activeFilter === "Completed") return st === "completed" || st === "archived";
       if (activeFilter === "Cancelled") return st === "cancelled";
       return true;
   });
@@ -2136,190 +2176,6 @@ const CreateMenuSheet = ({ open, onClose, onSelectCommunity, onSelectShift }) =>
   </AnimatePresence>
 );
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// CREATE SHIFT BOTTOM SHEET
-// ═══════════════════════════════════════════════════════════════════════════════
-const CreateShiftSheet = ({ open, onClose, onSubmit }) => {
-  const [title, setTitle] = useState("");
-  const [pay, setPay] = useState("₹800/hr");
-  const [urgent, setUrgent] = useState(true);
-
-  const handleSubmit = () => {
-    if (title.trim()) {
-      onSubmit({ title, pay, urgent });
-      setTitle("");
-      setPay("₹800/hr");
-    }
-  };
-
-  return (
-    <AnimatePresence>
-      {open && (
-        <>
-          <motion.div
-            className="absolute inset-0 z-[60] bg-black/40 backdrop-blur-sm"
-            initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
-            onClick={onClose}/>
-
-          <motion.div
-            className="absolute bottom-0 left-0 right-0 z-[70] flex flex-col rounded-t-3xl overflow-hidden shadow-2xl"
-            style={{ background: C.card, height: "75vh" }}
-            initial={{ y:"100%" }} animate={{ y:0 }} exit={{ y:"100%" }}
-            transition={{ type:"spring", stiffness:340, damping:38 }}
-          >
-            <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom:"1px solid #F1F5F9" }}>
-              <h2 className="font-black text-lg" style={{ color:C.blue, fontFamily:F.head }}>
-                Post a Shift
-              </h2>
-              <button onClick={onClose}
-                className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-100 transition-colors hover:bg-slate-200">
-                <X size={16} color={C.blue}/>
-              </button>
-            </div>
-
-            <div className="flex-1 p-5 flex flex-col gap-4 overflow-y-auto" style={{ scrollbarWidth: "none" }}>
-              <div>
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block" style={{ fontFamily:F.mono }}>Equipment / Role Required</label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Urgent X-Ray Technician"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none text-sm font-semibold text-slate-800 focus:border-teal-500 focus:bg-white transition-colors"
-                  style={{ fontFamily:F.head }}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block" style={{ fontFamily:F.mono }}>Date & Time</label>
-                  <div className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800">
-                    Today, 4:00 PM
-                  </div>
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block" style={{ fontFamily:F.mono }}>Pay Rate</label>
-                  <input
-                    type="text"
-                    value={pay}
-                    onChange={(e) => setPay(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none text-sm font-semibold text-slate-800 focus:border-teal-500 focus:bg-white transition-colors text-teal-600"
-                    style={{ fontFamily:F.head }}
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-4 rounded-xl border border-amber-200 bg-amber-50 mt-2">
-                <div>
-                  <p className="font-bold text-sm text-amber-900 mb-0.5">High Urgency</p>
-                  <p className="text-xs text-amber-700">Notifies all available technicians instantly</p>
-                </div>
-                <button onClick={() => setUrgent(!urgent)} className="w-12 h-6 rounded-full px-1 flex items-center transition-all bg-amber-400">
-                  <motion.div className="w-4 h-4 rounded-full bg-white shadow-sm"
-                    animate={{ x: urgent ? 24 : 0 }}
-                    transition={{ type:"spring", stiffness:500, damping:30 }}/>
-                </button>
-              </div>
-            </div>
-
-            <div className="p-5" style={{ borderTop:"1px solid #F1F5F9" }}>
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={handleSubmit}
-                className="w-full py-3.5 rounded-2xl font-black text-sm text-white shadow-lg flex items-center justify-center gap-2"
-                style={{ background: C.teal, boxShadow: `0 4px 14px ${C.teal}40`, opacity: title.trim() ? 1 : 0.6 }}>
-                <Zap size={16} fill="white"/> Post Urgent Shift
-              </motion.button>
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
-  );
-};
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// CREATE POST BOTTOM SHEET
-// ═══════════════════════════════════════════════════════════════════════════════
-const CreatePostSheet = ({ open, onClose, onSubmit, currentUser }) => {
-  const [text, setText] = useState("");
-
-  const handleSubmit = () => {
-    if (text.trim()) {
-      onSubmit(text);
-      setText("");
-    }
-  };
-
-  return (
-    <AnimatePresence>
-      {open && (
-        <>
-          <motion.div
-            className="absolute inset-0 z-[60] bg-black/40 backdrop-blur-sm"
-            initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
-            onClick={onClose}/>
-
-          <motion.div
-            className="absolute bottom-0 left-0 right-0 z-[70] flex flex-col rounded-t-3xl overflow-hidden shadow-2xl"
-            style={{ background: C.card, height: "70vh" }}
-            initial={{ y:"100%" }} animate={{ y:0 }} exit={{ y:"100%" }}
-            transition={{ type:"spring", stiffness:340, damping:38 }}
-          >
-            <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom:"1px solid #F1F5F9" }}>
-              <h2 className="font-black text-lg" style={{ color:C.blue, fontFamily:F.head }}>
-                Create New Post
-              </h2>
-              <button onClick={onClose}
-                className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-100 transition-colors hover:bg-slate-200">
-                <X size={16} color={C.blue}/>
-              </button>
-            </div>
-
-            <div className="flex-1 p-5 flex flex-col">
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-10 h-10 rounded-2xl flex items-center justify-center font-black text-white text-sm"
-                  style={{ background:`linear-gradient(135deg, ${C.blue}, #0F2744)` }}>
-                  {currentUser?.full_name ? currentUser.full_name.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2) : "U"}
-                </div>
-                <div>
-                  <p className="font-bold text-sm leading-tight" style={{ color:C.blue, fontFamily:F.head }}>
-                    {currentUser?.full_name || "Unknown User"}
-                  </p>
-                  <p className="text-xs text-slate-400 mt-0.5">{currentUser?.role === "manager" ? "Hospital Manager" : "Medical Technician"}</p>
-                </div>
-              </div>
-              <textarea
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                placeholder="Share a medical update, urgent need, or news..."
-                className="w-full flex-1 resize-none outline-none text-base text-slate-700 placeholder:text-slate-300 bg-transparent"
-                style={{ fontFamily:F.head }}
-                autoFocus
-              />
-            </div>
-
-            <div className="flex items-center justify-between px-5 py-4" style={{ borderTop:"1px solid #F1F5F9" }}>
-              <button className="w-12 h-12 rounded-2xl flex items-center justify-center transition-colors hover:bg-teal-100/50"
-                style={{ background: `${C.teal}12` }}>
-                <ImageIcon size={20} color={C.teal} />
-              </button>
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={handleSubmit}
-                className="px-6 py-3.5 rounded-2xl font-black text-sm text-white shadow-lg"
-                style={{ background: C.teal, boxShadow: `0 4px 14px ${C.teal}40`, opacity: text.trim() ? 1 : 0.6 }}>
-                Post to Community
-              </motion.button>
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
-  );
-};
-
-// ═══════════════════════════════════════════════════════════════════════════════
 // ROOT APP
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function MedShiftFull() {
@@ -2440,7 +2296,8 @@ export default function MedShiftFull() {
   const [role,       setRole]       = useState(null);
   const [activeTab,  setActiveTab]  = useState("home");
   const [notifOpen,  setNotifOpen]  = useState(false);
-  const [unread,     setUnread]     = useState(3);
+  const [unread,     setUnread]     = useState(0);
+  const [notifications, setNotifications] = useState([]);
   const [selectedShiftForApplicants, setSelectedShiftForApplicants] = useState(null);
 
   useEffect(() => {
@@ -2477,6 +2334,10 @@ export default function MedShiftFull() {
   const [managerShifts, setManagerShifts] = useState([]);
   const [techShifts, setTechShifts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isInboxOpen, setIsInboxOpen] = useState(false);
+  const [inboxMessages, setInboxMessages] = useState([]);
+  const [isTechInboxOpen, setIsTechInboxOpen] = useState(false);
+  const [techInboxMessages, setTechInboxMessages] = useState([]);
 
   const timeAgo = (date) => {
     const seconds = Math.floor((new Date() - new Date(date)) / 1000);
@@ -2564,42 +2425,135 @@ export default function MedShiftFull() {
   const fetchManagerData = async () => {
     if (!currentUser?.id) return;
     setIsLoading(true);
-    fetch(`${API_BASE}/api/dashboard/manager?manager_id=${currentUser.id}`)
-      .then(res => res.json())
-      .then(data => {
-          if (data.posted_shifts) {
-              const formattedShifts = data.posted_shifts.map(s => ({
-                id: s.id,
-                title: s.title,
-                time: new Date(s.start_time).toLocaleString(undefined, {
-                  month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit'
-                }),
-                pay: "₹" + s.hourly_rate + "/hr",
-                status: s.status,
-                statusLabel: s.status === 'searching' ? 'Searching…' : s.status,
-                color: C.amber,
-                icon: ScanLine,
-                dept: s.department,
-                duration: s.duration + " hrs",
-                totalEst: "₹" + (s.hourly_rate * s.duration)
-              }));
-              setManagerShifts(formattedShifts);
-          }
-          setIsLoading(false);
-      })
-      .catch(err => {
-          console.error("Dashboard fetch error:", err);
-          setIsLoading(false);
-      });
+    // Fetch shifts and inbox messages in parallel
+    const [shiftsRes, msgRes] = await Promise.allSettled([
+      fetch(`${API_BASE}/api/dashboard/manager?manager_id=${currentUser.id}`),
+      fetch(`${API_BASE}/api/messages/manager/${currentUser.id}`),
+    ]);
+
+    if (shiftsRes.status === "fulfilled" && shiftsRes.value.ok) {
+      const data = await shiftsRes.value.json();
+      if (data.posted_shifts) {
+        const formattedShifts = data.posted_shifts.map(s => ({
+          ...s,
+          id: s.id,
+          title: s.title,
+          time: new Date(s.start_time).toLocaleString(undefined, {
+            month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit'
+          }),
+          pay: "₹" + s.hourly_rate + "/hr",
+          status: s.status,
+          statusLabel: s.status === 'searching' ? 'Searching…' : s.status,
+          color: C.amber,
+          icon: ScanLine,
+          dept: s.department,
+          duration: s.duration + " hrs",
+          totalEst: "₹" + (s.hourly_rate * s.duration)
+        }));
+        setManagerShifts(formattedShifts);
+      }
+    }
+
+    if (msgRes.status === "fulfilled" && msgRes.value.ok) {
+      const msgs = await msgRes.value.json();
+      setInboxMessages(Array.isArray(msgs) ? msgs : []);
+    }
+
+    setIsLoading(false);
   };
 
   useEffect(() => {
     if (role === "manager" && isAuthenticated && currentUser?.id) {
       fetchManagerData();
+    } else if (role === "technician" && isAuthenticated && currentUser?.id) {
+      // Fetch tech inbox messages in background
+      fetch(`${API_BASE}/api/messages/technician/${currentUser.id}`)
+        .then((r) => r.json())
+        .then((msgs) => setTechInboxMessages(Array.isArray(msgs) ? msgs : []))
+        .catch(() => {});
+      setIsLoading(false);
     } else {
       setIsLoading(false);
     }
   }, [role, isAuthenticated]);
+
+  // Real-time Notifications & History
+  useEffect(() => {
+    if (!isAuthenticated || !currentUser?.id) return;
+
+    // Step A: HTTP Fallback (Fetch History)
+    const fetchHistory = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/notifications/${currentUser.id}`);
+        if (res.ok) {
+          const data = await res.json();
+          // Map to frontend format if needed (Backend returns: id, title, body, icon, color, is_read, created_at)
+          const mapped = data.map(n => ({
+            ...n,
+            read: n.is_read,
+            time: timeAgo(n.created_at),
+            tag: n.tag || "Notif"
+          }));
+          setNotifications(mapped);
+          setUnread(mapped.filter(n => !n.read).length);
+        }
+      } catch (err) {
+        console.error("Failed to fetch notification history", err);
+      }
+    };
+    fetchHistory();
+
+    // Step B: WebSocket
+    let socket;
+    let reconnectTimeout;
+    let destroyed = false; // guard against reconnect after unmount
+
+    const connectWS = () => {
+      if (destroyed) return; // don't reconnect if component unmounted
+      const wsProtocol = API_BASE.startsWith("https") ? "wss:" : "ws:";
+      // Support both local and prod URL logic
+      const host = API_BASE.replace(/^https?:\/\//, "");
+      const wsUrl = `${wsProtocol}//${host}/ws/notifications/${currentUser.id}`;
+      
+      socket = new WebSocket(wsUrl);
+
+      socket.onmessage = (event) => {
+        try {
+          const newNotif = JSON.parse(event.data);
+          const frontendNotif = {
+            ...newNotif,
+            read: false,
+            time: "Just now",
+            tag: newNotif.tag || "New"
+          };
+          setNotifications(prev => [frontendNotif, ...prev]);
+          setUnread(prev => prev + 1);
+        } catch (e) {
+          console.error("Error parsing WS message — skipping:", e);
+          // Single bad message is swallowed; listener stays alive
+        }
+      };
+
+      socket.onclose = () => {
+        if (!destroyed) {
+          reconnectTimeout = setTimeout(connectWS, 3000); // Auto-Reconnect only when alive
+        }
+      };
+
+      socket.onerror = (err) => {
+        console.error("WebSocket error:", err);
+        socket.close(); // triggers onclose → reconnect (if not destroyed)
+      };
+    };
+
+    connectWS();
+
+    return () => {
+      destroyed = true; // stop reconnect loop on unmount
+      if (socket) socket.close();
+      if (reconnectTimeout) clearTimeout(reconnectTimeout);
+    };
+  }, [isAuthenticated, currentUser?.id]);
   const [createMenuOpen, setCreateMenuOpen] = useState(false);
   const [createPostOpen, setCreatePostOpen] = useState(false);
   const [createShiftOpen, setCreateShiftOpen] = useState(false);
@@ -2631,21 +2585,31 @@ export default function MedShiftFull() {
   };
 
   const handleCompleteShift = async (shiftId) => {
-    if (!window.confirm("Complete this shift and archive it?")) return;
     try {
       const res = await fetch(`${API_BASE}/api/shifts/${shiftId}/complete`, { method: "PUT" });
       if (res.ok) {
-        setManagerShifts(prev => prev.map(s => s.id === shiftId ? { ...s, status: "completed", statusLabel: "Completed" } : s));
+        setManagerShifts(prev => prev.map(s => s.id === shiftId ? { ...s, status: "completed", statusLabel: "Completed", color: C.green } : s));
       }
     } catch(err) { console.error("Error completing shift", err); }
   };
 
+  const handleArchiveShift = async (shiftId) => {
+    if (!window.confirm("Archive this shift? It will be removed from your active dashboard view.")) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/shifts/${shiftId}/archive`, { method: "PUT" });
+      if (res.ok) {
+        setManagerShifts(prev => prev.map(s => s.id === shiftId ? { ...s, status: "archived", statusLabel: "Archived" } : s));
+      }
+    } catch(err) { console.error("Error archiving shift", err); }
+  };
+
   const handleCancelShift = async (shiftId) => {
     if (!window.confirm("Are you sure you want to cancel this shift?")) return;
+    if (!window.confirm("WARNING: This action cannot be undone. Permanently cancel this shift?")) return;
     try {
       const res = await fetch(`${API_BASE}/api/shifts/${shiftId}/cancel`, { method: "PUT" });
       if (res.ok) {
-        setManagerShifts(prev => prev.map(s => s.id === shiftId ? { ...s, status: "cancelled", statusLabel: "Cancelled" } : s));
+        setManagerShifts(prev => prev.map(s => s.id === shiftId ? { ...s, status: "cancelled", statusLabel: "Cancelled", color: "#94A3B8" } : s));
       }
     } catch(err) { console.error("Error cancelling shift", err); }
   };
@@ -2715,23 +2679,33 @@ export default function MedShiftFull() {
     }
   };
 
-  const handleCreateShift = async ({ title, pay, urgent }) => {
+  const handleCreateShift = async ({ title, roleType, payAmount, payPeriod, dateSelection, customDate, time, urgent }) => {
     if (!currentUser?.id) return alert("Please log in again to create a shift.");
     try {
-      const startTime = new Date();
-      const endTime = new Date(startTime.getTime() + 4 * 60 * 60 * 1000); // 4 hours later
-      
+      // Build start_time from the form's date + time fields
+      const today = new Date();
+      let baseDate = new Date(today);
+      if (dateSelection === "Tomorrow") {
+        baseDate.setDate(baseDate.getDate() + 1);
+      } else if (dateSelection === "Custom" && customDate) {
+        baseDate = new Date(customDate);
+      }
+      const [hours, minutes] = (time || "16:00").split(":").map(Number);
+      baseDate.setHours(hours, minutes, 0, 0);
+      const startTime = baseDate;
+      const endTime = new Date(startTime.getTime() + 8 * 60 * 60 * 1000); // 8 hours later
+
       const res = await fetch(`${API_BASE}/api/shifts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           manager_id: currentUser.id,
           title,
-          hourly_rate: Number(pay.replace(/[^0-9.]/g, '')),
+          hourly_rate: Number(payAmount) || 0,
           is_urgent: urgent,
           start_time: startTime.toISOString(),
           end_time: endTime.toISOString(),
-          department: "Emergency Radiology" 
+          department: roleType || "General"
         })
       });
       if (!res.ok) throw new Error("Failed to create shift");
@@ -2785,7 +2759,7 @@ export default function MedShiftFull() {
     }
   };
 
-  const notifications = role === "manager" ? MANAGER_NOTIFICATIONS : TECH_NOTIFICATIONS;
+  // Dynamic notifications state used here
 
   // Demo Login Gateway
   if (!isAuthenticated) {
@@ -2810,7 +2784,15 @@ export default function MedShiftFull() {
 
   const renderTab = () => {
     switch (activeTab) {
-      case "home":      return role === "manager" ? <ManagerDashboard shifts={managerShifts} onCreateShift={() => setCreateShiftOpen(true)} onViewProfileClick={(tech) => role === 'manager' && setSelectedTechnician(tech || true)} onCompleteShift={handleCompleteShift} onCancelShift={handleCancelShift} currentUser={currentUser} onViewApplicants={(shift) => setSelectedShiftForApplicants(shift)} /> : <TechRadar shifts={techShifts} onHospitalClick={(name) => role === 'technician' && setSelectedHospital(name)} isGuest={isGuest} onRequireAuth={handleRequireAuth} currentUser={currentUser} onApplyShift={handleApplyShift} isAvailable={isAvailable} toggleAvailability={toggleAvailability} />;
+      case "home": {
+        const unreadMessageCount = inboxMessages.filter(m => !m.is_read).length;
+        const totalMessageCount = inboxMessages.length;
+        const unreadTechCount = techInboxMessages.filter(m => !m.is_read).length;
+        const totalTechCount = techInboxMessages.length;
+        return role === "manager"
+          ? <ManagerDashboard shifts={managerShifts} onCreateShift={() => setCreateShiftOpen(true)} onViewProfileClick={(tech) => role === 'manager' && setSelectedTechnician(tech || true)} onCompleteShift={handleCompleteShift} onCancelShift={handleCancelShift} onArchiveShift={handleArchiveShift} currentUser={currentUser} onViewApplicants={(shift) => setSelectedShiftForApplicants(shift)} onInboxClick={() => setIsInboxOpen(true)} unreadMessageCount={unreadMessageCount} totalMessageCount={totalMessageCount} />
+          : <TechRadar shifts={techShifts} onHospitalClick={(name) => role === 'technician' && setSelectedHospital(name)} isGuest={isGuest} onRequireAuth={handleRequireAuth} currentUser={currentUser} onApplyShift={handleApplyShift} isAvailable={isAvailable} toggleAvailability={toggleAvailability} unreadTechCount={unreadTechCount} totalTechCount={totalTechCount} onInboxClick={() => setIsTechInboxOpen(true)} />;
+      }
       case "shifts":    return <ShiftsTab role={role} managerShifts={managerShifts} techShifts={techShifts} isGuest={isGuest} onRequireAuth={handleRequireAuth} currentUser={currentUser}/>;
       case "community": return <CommunityFeed posts={posts} onAuthorClick={(name) => role === 'technician' && setSelectedHospital(name)} />;
       case "profile":
@@ -2882,6 +2864,22 @@ export default function MedShiftFull() {
           onClose={() => setNotifOpen(false)}
           notifications={notifications}
           onMarkAll={() => setUnread(0)}
+        />
+
+        {/* Manager Quick Inbox Modal */}
+        <QuickInboxModal
+          open={isInboxOpen}
+          onClose={() => setIsInboxOpen(false)}
+          managerId={currentUser?.id}
+          apiBase={API_BASE}
+        />
+
+        {/* Technician Quick Inbox Modal */}
+        <TechQuickInboxModal
+          open={isTechInboxOpen}
+          onClose={() => setIsTechInboxOpen(false)}
+          techId={currentUser?.id}
+          apiBase={API_BASE}
         />
 
         {/* Create Menu Sheet (Manager Dual Option) */}
@@ -2991,10 +2989,7 @@ export default function MedShiftFull() {
           onClose={() => setSelectedShiftForApplicants(null)} 
           onApplicantAction={() => {
             if (role === "manager" && currentUser?.id) {
-              fetch(`${API_BASE}/api/dashboard/manager?manager_id=${currentUser.id}`)
-                .then(r => r.json())
-                .then(data => setManagerShifts(data.posted_shifts))
-                .catch(e => console.error(e));
+              fetchManagerData();
             }
           }}
           onFinalize={async (shiftId) => {
@@ -3003,10 +2998,7 @@ export default function MedShiftFull() {
               if (res.ok) {
                 setSelectedShiftForApplicants(null);
                 if (role === "manager" && currentUser?.id) {
-                  fetch(`${API_BASE}/api/dashboard/manager?manager_id=${currentUser.id}`)
-                    .then(r => r.json())
-                    .then(data => setManagerShifts(data.posted_shifts))
-                    .catch(e => console.error(e));
+                  fetchManagerData();
                 }
               }
             } catch (e) { console.error(e); }
