@@ -1,6 +1,6 @@
 {
   "appId": "com.medshift.app",
-  "appName": "MedShift",
+  "appName": "Quick Med Support",
   "webDir": "dist",
   "plugins": {
     "CapacitorHttp": {
@@ -8,9 +8,9 @@
     }
   },
   "server": {
-    "androidScheme": "https",
+    "androidScheme": "http",
     "allowNavigation": [
-      "medshift-backend-3ktw.onrender.com"
+      "quickmedsupport.duckdns.org"
     ]
   }
 }

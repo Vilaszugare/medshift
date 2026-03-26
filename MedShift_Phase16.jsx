@@ -19,7 +19,8 @@ const F = {
   body: "system-ui, -apple-system, sans-serif",
 };
 // let rawUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
-let rawUrl = import.meta.env.VITE_API_URL || "https://medshift-backend-3ktw.onrender.com";
+// let rawUrl = import.meta.env.VITE_API_URL || "https://medshift-backend-3ktw.onrender.com";
+let rawUrl = import.meta.env.VITE_API_URL || "http://quickmedsupport.duckdns.org";
 if (rawUrl.endsWith("/")) rawUrl = rawUrl.slice(0, -1);
 if (Capacitor.isNativePlatform() && rawUrl.includes("localhost")) {
   rawUrl = rawUrl.replace("localhost", "10.0.2.2");

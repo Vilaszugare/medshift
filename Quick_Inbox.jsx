@@ -1,9 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  X, MessageCircle, ArrowLeft, Send, Inbox, Loader2
+  X, MessageCircle, ArrowLeft, Send, Inbox, Loader2, Phone
 } from "lucide-react";
 import { C, F } from "./MedShift_Phase12_15.jsx";
+import CallingScreen from "./components/CallingScreen.jsx";
+import ChatHeader from "./components/ChatHeader.jsx";
+import ProfileOverlay from "./components/ProfileOverlay.jsx";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function timeAgo(iso) {
@@ -223,6 +226,8 @@ const QuickInboxModal = ({ open, onClose, managerId, apiBase }) => {
   const [replies, setReplies] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedMsg, setSelectedMsg] = useState(null);
+  const [isCalling, setIsCalling] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
 
   // Fetch messages + suggested replies whenever the modal opens
   useEffect(() => {
@@ -289,49 +294,21 @@ const QuickInboxModal = ({ open, onClose, managerId, apiBase }) => {
             <div className="w-10 h-1 rounded-full bg-slate-200 mx-auto mt-3 mb-1 flex-shrink-0" />
 
             {/* Header */}
-            <div
-              className="flex items-center gap-3 px-5 py-3 flex-shrink-0"
-              style={{ borderBottom: "1px solid #F1F5F9" }}
-            >
-              {selectedMsg ? (
-                <button
-                  onClick={() => setSelectedMsg(null)}
-                  className="w-9 h-9 rounded-2xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: "#F1F5F9" }}
-                >
-                  <ArrowLeft size={16} color={C.blue} />
-                </button>
-              ) : (
-                <div
-                  className="w-9 h-9 rounded-2xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: `${C.teal}12` }}
-                >
-                  <Inbox size={16} color={C.teal} />
-                </div>
-              )}
-
-              <div className="flex-1">
-                <h2
-                  className="font-black text-base leading-tight"
-                  style={{ color: C.blue, fontFamily: F.head }}
-                >
-                  {selectedMsg ? selectedMsg.sender_name : "Quick Inbox"}
-                </h2>
-                {selectedMsg ? (
-                  <p className="text-[10px] text-slate-400">{selectedMsg.shift_title}</p>
-                ) : unreadCount > 0 ? (
-                  <p className="text-[10px] text-slate-400">{unreadCount} unread</p>
-                ) : null}
-              </div>
-
-              <button
-                onClick={onClose}
-                className="w-9 h-9 rounded-2xl flex items-center justify-center"
-                style={{ background: "#F1F5F9" }}
-              >
-                <X size={16} color="#94A3B8" />
-              </button>
-            </div>
+            <ChatHeader
+              selectedMsg={selectedMsg}
+              onBack={() => {
+                setSelectedMsg(null);
+                setShowProfile(false);
+              }}
+              onClose={onClose}
+              onCall={() => setIsCalling(true)}
+              onTitleClick={() => setShowProfile(true)}
+              unreadCount={unreadCount}
+              C={C}
+              F={F}
+              title={selectedMsg ? selectedMsg.sender_name : "Quick Inbox"}
+              subtitle={selectedMsg ? selectedMsg.shift_title : (unreadCount > 0 ? `${unreadCount} unread` : null)}
+            />
 
             {/* Body */}
             <div className="flex-1 overflow-hidden">
@@ -382,6 +359,27 @@ const QuickInboxModal = ({ open, onClose, managerId, apiBase }) => {
                 </div>
               )}
             </div>
+          {/* ── Calling Screen Overlay ── */}
+          <AnimatePresence>
+            {isCalling && (
+              <CallingScreen
+                callee={selectedMsg?.sender_name || "Unknown"}
+                onEnd={() => setIsCalling(false)}
+              />
+            )}
+          </AnimatePresence>
+
+          {/* ── Profile Overlay ── */}
+          <ProfileOverlay
+            show={showProfile}
+            role="manager"
+            onBack={() => setShowProfile(false)}
+            onCall={() => {
+              setShowProfile(false);
+              setIsCalling(true);
+            }}
+          />
+
           </motion.div>
         </>
       )}

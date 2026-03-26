@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import PullToRefresh from 'react-simple-pull-to-refresh';
-import { HospitalProfile, TechnicianProfile, CallingScreen } from './MedShift_Phase10_11.jsx';
+import { HospitalProfile, TechnicianProfile } from './MedShift_Phase10_11.jsx';
+import CallingScreen from './components/CallingScreen.jsx';
 import CreateShiftSheet from './CreateShiftSheet.jsx';
 import CreatePostSheet from './CreatePostSheet.jsx';
 import QuickInboxModal from './Quick_Inbox.jsx';
@@ -22,11 +23,12 @@ import {
   Moon, Sun, LogOut, Edit2, Trash2
 } from "lucide-react";
 import { Capacitor } from '@capacitor/core';
-// PRODUCTION SERVER (Commented out for local development)
+// PRODUCTION SERVER
 // const rawUrl = import.meta.env.VITE_API_URL || "https://medshift-backend-3ktw.onrender.com";
+// const rawUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
-// LOCAL DEVELOPMENT SERVER (Active)
-const rawUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
+// DuckDNS Domain (Active)
+const rawUrl = import.meta.env.VITE_API_URL || "http://quickmedsupport.duckdns.org";
 let processedUrl = rawUrl.endsWith("/") ? rawUrl.slice(0, -1) : rawUrl;
 
 // If running natively on Android emulator, rewrite localhost to the loopback IP

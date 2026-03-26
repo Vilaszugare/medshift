@@ -8,8 +8,9 @@ import {
   Wifi, Battery, MoreVertical, Heart, TrendingUp,
   Hash, PhoneOff, Cpu, Timer, Navigation, BadgeCheck
 } from "lucide-react";
+import CallingScreen from "./components/CallingScreen.jsx";
 
-// ─── PALETTE ──────────────────────────────────────────────────────────────────
+// âââ PALETTE ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 const C = {
   blue: "#1A365D",
   teal: "#0D9488",
@@ -17,13 +18,13 @@ const C = {
   card: "#FFFFFF",
 };
 
-// ─── DEMO DATA ────────────────────────────────────────────────────────────────
+// âââ DEMO DATA ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 const HOSPITAL = {
   name: "City Care Hospital",
   manager: "Dr. A. Sharma",
   managerRole: "Chief Medical Officer",
-  address: "14, Sassoon Road, Pune — 411001",
-  tagline: "NABH Accredited · ISO 9001:2015",
+  address: "14, Sassoon Road, Pune â 411001",
+  tagline: "NABH Accredited Â· ISO 9001:2015",
   verified: true,
   rating: 4.8,
   totalHires: 312,
@@ -31,9 +32,9 @@ const HOSPITAL = {
   founded: "Est. 1984",
   departments: ["Radiology", "Oncology", "Neurology", "Cardiology"],
   activeRequirements: [
-    { id: 1, equip: "MRI Technician", urgency: "URGENT", shift: "Today, 2:00 PM", pay: "₹1,200/hr", color: "#EF4444" },
-    { id: 2, equip: "CT Scan Tech", urgency: "SOON", shift: "Today, 6:00 PM", pay: "₹980/hr", color: "#F59E0B" },
-    { id: 3, equip: "X-Ray Tech", urgency: "OPEN", shift: "Tomorrow, 9 AM", pay: "₹750/hr", color: C.teal },
+    { id: 1, equip: "MRI Technician", urgency: "URGENT", shift: "Today, 2:00 PM", pay: "â¹1,200/hr", color: "#EF4444" },
+    { id: 2, equip: "CT Scan Tech", urgency: "SOON", shift: "Today, 6:00 PM", pay: "â¹980/hr", color: "#F59E0B" },
+    { id: 3, equip: "X-Ray Tech", urgency: "OPEN", shift: "Tomorrow, 9 AM", pay: "â¹750/hr", color: C.teal },
   ],
   reviews: [
     { name: "Priya K.", text: "Very professional environment, quick onboarding.", stars: 5 },
@@ -57,13 +58,13 @@ const TECHNICIAN = {
   lastActive: "Active now",
   specialties: ["Brain MRI", "Spine", "Cardiac", "Vascular"],
   recentShifts: [
-    { hospital: "Apollo Diagnostics", date: "Mar 15", pay: "₹4,800", rating: 5 },
-    { hospital: "Fortis Healthtech", date: "Mar 12", pay: "₹7,200", rating: 5 },
-    { hospital: "Ruby Hall Clinic", date: "Mar 10", pay: "₹3,600", rating: 4 },
+    { hospital: "Apollo Diagnostics", date: "Mar 15", pay: "â¹4,800", rating: 5 },
+    { hospital: "Fortis Healthtech", date: "Mar 12", pay: "â¹7,200", rating: 5 },
+    { hospital: "Ruby Hall Clinic", date: "Mar 10", pay: "â¹3,600", rating: 4 },
   ],
 };
 
-// ─── STATUS BAR ───────────────────────────────────────────────────────────────
+// âââ STATUS BAR âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 const StatusBar = ({ dark = false }) => (
   <div className="flex items-center justify-between px-5 py-2"
     style={{ background: dark ? "transparent" : C.blue }}>
@@ -77,7 +78,7 @@ const StatusBar = ({ dark = false }) => (
   </div>
 );
 
-// ─── VERIFIED BADGE ───────────────────────────────────────────────────────────
+// âââ VERIFIED BADGE âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 const VerifiedBadge = ({ label = "Verified" }) => (
   <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold"
     style={{ background: `${C.teal}18`, color: C.teal, fontFamily: "'DM Mono', monospace" }}>
@@ -85,9 +86,9 @@ const VerifiedBadge = ({ label = "Verified" }) => (
   </span>
 );
 
-// ─────────────────────────────────────────────────────────────────────────────
-// PHASE 10-A  ·  HOSPITAL MANAGER PROFILE  (viewed by a Technician)
-// ─────────────────────────────────────────────────────────────────────────────
+// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// PHASE 10-A  Â·  HOSPITAL MANAGER PROFILE  (viewed by a Technician)
+// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 export const HospitalProfile = ({ onCall, onBack }) => {
   return (
     <motion.div
@@ -99,7 +100,7 @@ export const HospitalProfile = ({ onCall, onBack }) => {
       <style>{`::-webkit-scrollbar{display:none}`}</style>
       <StatusBar />
 
-      {/* ── Cover Image ── */}
+      {/* ââ Cover Image ââ */}
       <div className="relative" style={{ height: 200 }}>
         {/* Illustrated hospital facade using SVG */}
         <svg viewBox="0 0 430 200" className="w-full h-full" preserveAspectRatio="xMidYMid slice"
@@ -139,7 +140,7 @@ export const HospitalProfile = ({ onCall, onBack }) => {
           <rect x="0" y="192" width="430" height="8" fill="#94A3B8" opacity="0.3" />
           {/* NABH banner */}
           <rect x="85" y="42" width="72" height="16" rx="3" fill={C.teal} opacity="0.9" />
-          <text x="121" y="54" textAnchor="middle" fill="white" fontSize="8" fontFamily="monospace" fontWeight="bold">NABH ✓</text>
+          <text x="121" y="54" textAnchor="middle" fill="white" fontSize="8" fontFamily="monospace" fontWeight="bold">NABH â</text>
         </svg>
 
         {/* Nav buttons */}
@@ -153,7 +154,7 @@ export const HospitalProfile = ({ onCall, onBack }) => {
           <MoreVertical size={17} color={C.blue} />
         </button>
 
-        {/* Circular logo avatar — overlapping the cover */}
+        {/* Circular logo avatar â overlapping the cover */}
         <div className="absolute -bottom-10 left-5 z-10">
           <div className="w-20 h-20 rounded-3xl border-4 border-white flex items-center justify-center shadow-xl"
             style={{ background: `linear-gradient(135deg, ${C.blue}, #1E4A7A)` }}>
@@ -162,7 +163,7 @@ export const HospitalProfile = ({ onCall, onBack }) => {
         </div>
       </div>
 
-      {/* ── Main Content ── */}
+      {/* ââ Main Content ââ */}
       <div className="px-5 pt-14 pb-32">
 
         {/* Hospital Name & Badges */}
@@ -232,7 +233,7 @@ export const HospitalProfile = ({ onCall, onBack }) => {
           </div>
         </div>
 
-        {/* ── Active Urgent Requirements ── */}
+        {/* ââ Active Urgent Requirements ââ */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-xs font-black uppercase tracking-widest"
@@ -294,14 +295,14 @@ export const HospitalProfile = ({ onCall, onBack }) => {
         </div>
       </div>
 
-      {/* ── Sticky Action Buttons ── */}
+      {/* ââ Sticky Action Buttons ââ */}
       <div className="fixed bottom-0 left-0 right-0 z-30 px-5 pb-8 pt-4"
         style={{
           background: "rgba(248,250,252,0.96)", backdropFilter: "blur(16px)",
           borderTop: "1px solid #E2E8F0", maxWidth: 430, margin: "0 auto"
         }}>
         <div className="flex gap-3">
-          {/* Message button — primary */}
+          {/* Message button â primary */}
           <motion.button whileTap={{ scale: 0.96 }}
             className="flex-1 py-4 rounded-2xl font-black text-base text-white flex items-center justify-center gap-2.5"
             style={{
@@ -318,16 +319,16 @@ export const HospitalProfile = ({ onCall, onBack }) => {
           </motion.button>
         </div>
         <p className="text-center text-xs text-slate-400 mt-2.5">
-          <span className="font-bold text-emerald-500">●</span> Typically replies in under 3 minutes
+          <span className="font-bold text-emerald-500">â</span> Typically replies in under 3 minutes
         </p>
       </div>
     </motion.div>
   );
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
+// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 // PHASE 10-B  ·  TECHNICIAN PROFILE  (viewed by a Manager)
-// ─────────────────────────────────────────────────────────────────────────────
+// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 export const TechnicianProfile = ({ onCall, onBack }) => {
   const [hired, setHired] = useState(false);
 
@@ -341,7 +342,7 @@ export const TechnicianProfile = ({ onCall, onBack }) => {
       <style>{`::-webkit-scrollbar{display:none}`}</style>
       <StatusBar />
 
-      {/* ── Hero Header — Deep Blue gradient ── */}
+      {/* ââ Hero Header â Deep Blue gradient ââ */}
       <div className="relative px-5 pt-4 pb-8"
         style={{ background: `linear-gradient(160deg, ${C.blue} 0%, #0F2744 100%)` }}>
         <div className="flex items-center justify-between mb-5">
@@ -400,10 +401,10 @@ export const TechnicianProfile = ({ onCall, onBack }) => {
         </div>
       </div>
 
-      {/* ── Main Content ── */}
+      {/* ââ Main Content ââ */}
       <div className="px-5 pt-5 pb-36">
 
-        {/* ── 2×2 Details Grid ── */}
+        {/* ââ 2Ã2 Details Grid ââ */}
         <div className="grid grid-cols-2 gap-3 mb-6">
           {[
             { label: "Experience", value: TECHNICIAN.experience, icon: Briefcase, color: C.blue, bg: `${C.blue}0C` },
@@ -505,7 +506,7 @@ export const TechnicianProfile = ({ onCall, onBack }) => {
         </div>
       </div>
 
-      {/* ── Sticky Bottom — Hire Instantly + Call/Text ── */}
+      {/* ââ Sticky Bottom â Hire Instantly + Call/Text ââ */}
       <div className="fixed bottom-0 left-0 right-0 z-30 px-5 pb-8 pt-4"
         style={{
           background: "rgba(248,250,252,0.96)", backdropFilter: "blur(16px)",
@@ -527,242 +528,33 @@ export const TechnicianProfile = ({ onCall, onBack }) => {
               background: hired
                 ? "linear-gradient(135deg,#10B981,#059669)"
                 : `linear-gradient(135deg, ${C.teal}, #0F766E)`,
-              boxShadow: hired
-                ? "0 8px 32px rgba(16,185,129,0.4)"
-                : `0 8px 32px ${C.teal}45`,
+              boxShadow: hired ? "0 8px 24px rgba(16,185,129,0.4)" : `0 8px 24px ${C.teal}40`,
+
               fontFamily: "'DM Sans', sans-serif"
+
             }}>
-            <AnimatePresence mode="wait">
-              {hired ? (
-                <motion.span key="done" className="flex items-center gap-2"
-                  initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}>
-                  <CheckCircle size={22} /> Hired! 🎉
-                </motion.span>
-              ) : (
-                <motion.span key="hire" className="flex items-center gap-2"
-                  initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}>
-                  <Zap size={22} /> Hire Instantly
-                </motion.span>
-              )}
-            </AnimatePresence>
+
+            {hired ? <CheckCircle size={20} /> : <Zap size={20} />}
+
+            {hired ? "Hired!" : "Hire Instantly"}
+
           </motion.button>
 
-          {/* Video call icon */}
-          <motion.button whileTap={{ scale: 0.92 }} onClick={onCall}
+
+
+          {/* Call button */}
+
+          <motion.button whileTap={{ scale: 0.94 }} onClick={onCall}
+
             className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
-            style={{ background: `${C.teal}12`, border: `1px solid ${C.teal}25` }}>
-            <Video size={22} color={C.teal} />
+
+            style={{ background: "#25D366", boxShadow: "0 8px 24px rgba(37,211,102,0.4)" }}>
+
+            <Phone size={22} color="white" />
+
           </motion.button>
+
         </div>
-      </div>
-    </motion.div>
-  );
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// PHASE 11  ·  MOCK CALLING UI  (WhatsApp-style)
-// ─────────────────────────────────────────────────────────────────────────────
-export const CallingScreen = ({ callee, onEnd }) => {
-  const [muted, setMuted] = useState(false);
-  const [speakerOn, setSpeakerOn] = useState(false);
-  const [videoOff, setVideoOff] = useState(true);
-  const [duration, setDuration] = useState(0);
-  const [callState, setCallState] = useState("ringing"); // ringing | connected
-
-  // Simulate "connected" after 3 seconds
-  useEffect(() => {
-    const t = setTimeout(() => setCallState("connected"), 3000);
-    return () => clearTimeout(t);
-  }, []);
-
-  // Timer when connected
-  useEffect(() => {
-    if (callState !== "connected") return;
-    const t = setInterval(() => setDuration(d => d + 1), 1000);
-    return () => clearInterval(t);
-  }, [callState]);
-
-  const fmt = (s) => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
-
-  const handleEnd = () => {
-    onEnd();
-  };
-
-  return (
-    <motion.div
-      className="absolute inset-0 z-50 flex flex-col"
-      initial={{ y: "100%", opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      exit={{ y: "100%", opacity: 0 }}
-      transition={{ type: "spring", stiffness: 300, damping: 38 }}
-    >
-      {/* ── Full-screen blurred "profile photo" background ── */}
-      <div className="absolute inset-0">
-        {/* Simulated blurred avatar — deep gradient + geometric noise */}
-        <div className="absolute inset-0"
-          style={{ background: "linear-gradient(160deg, #0F2744 0%, #1A4A3A 40%, #0D3030 100%)" }} />
-
-        {/* Blurred shape blobs simulating a blurred portrait */}
-        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 430 932"
-          xmlns="http://www.w3.org/2000/svg" opacity="0.35">
-          <defs>
-            <filter id="blur1"><feGaussianBlur stdDeviation="48" /></filter>
-          </defs>
-          <ellipse cx="215" cy="280" rx="110" ry="130" fill={C.teal} filter="url(#blur1)" />
-          <ellipse cx="200" cy="460" rx="130" ry="90" fill="#0D9488" filter="url(#blur1)" />
-          <ellipse cx="215" cy="180" rx="70" ry="80" fill="#1E8A7A" filter="url(#blur1)" />
-        </svg>
-
-        {/* Dark overlay for text legibility */}
-        <div className="absolute inset-0" style={{ background: "rgba(8,20,40,0.62)" }} />
-      </div>
-
-      <StatusBar dark />
-
-      {/* ── Top Section: Callee info ── */}
-      <div className="relative z-10 flex flex-col items-center pt-12 px-5">
-        {/* Avatar */}
-        <motion.div
-          animate={callState === "ringing"
-            ? { boxShadow: ["0 0 0 0px rgba(13,148,136,0.5)", "0 0 0 28px rgba(13,148,136,0)"] }
-            : { boxShadow: "none" }
-          }
-          transition={{ duration: 1.4, repeat: Infinity }}
-          className="w-28 h-28 rounded-full border-4 flex items-center justify-center mb-5 font-black text-5xl text-white"
-          style={{
-            background: `linear-gradient(135deg, ${C.teal}, #0F766E)`,
-            borderColor: "rgba(255,255,255,0.25)"
-          }}>
-          R
-        </motion.div>
-
-        {/* Name */}
-        <h1 className="font-black text-3xl text-white mb-1"
-          style={{ fontFamily: "'DM Sans', sans-serif" }}>
-          {callee}
-        </h1>
-        <p className="text-white/60 text-sm mb-3">Senior MRI Technician</p>
-
-        {/* Ringing / Connected status with pulse animation */}
-        <AnimatePresence mode="wait">
-          {callState === "ringing" ? (
-            <motion.div key="ringing" className="flex items-center gap-2"
-              initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}>
-              {/* Three pulsing dots */}
-              <div className="flex items-center gap-1">
-                {[0, 0.2, 0.4].map((d, i) => (
-                  <motion.span key={i}
-                    className="w-2 h-2 rounded-full"
-                    style={{ background: "rgba(255,255,255,0.7)" }}
-                    animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
-                    transition={{ duration: 1, repeat: Infinity, delay: d }}
-                  />
-                ))}
-              </div>
-              <motion.span
-                className="text-white/80 text-base font-semibold"
-                animate={{ opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 1.4, repeat: Infinity }}
-              >
-                Calling {callee}…
-              </motion.span>
-            </motion.div>
-          ) : (
-            <motion.div key="connected"
-              initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }}
-              className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-emerald-400 font-black text-base"
-                style={{ fontFamily: "'DM Mono', monospace" }}>
-                {fmt(duration)}
-              </span>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* ── Middle decoration: signal ripples ── */}
-      <div className="relative z-10 flex-1 flex items-center justify-center">
-        {callState === "ringing" && (
-          <div className="relative flex items-center justify-center">
-            {[1, 2, 3].map(i => (
-              <motion.div key={i}
-                className="absolute rounded-full border"
-                style={{ borderColor: "rgba(13,148,136,0.25)", width: 80, height: 80 }}
-                animate={{ scale: [1, 4], opacity: [0.6, 0] }}
-                transition={{ duration: 2.5, repeat: Infinity, delay: i * 0.7 }}
-              />
-            ))}
-          </div>
-        )}
-        {callState === "connected" && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-            className="flex flex-col items-center gap-2 px-6 py-4 rounded-3xl"
-            style={{ background: "rgba(255,255,255,0.07)", backdropFilter: "blur(12px)" }}>
-            <Activity size={22} color={C.teal} />
-            <p className="text-white/60 text-xs">Voice call encrypted</p>
-          </motion.div>
-        )}
-      </div>
-
-      {/* ── Bottom Controls — Floating Pill ── */}
-      <div className="relative z-10 pb-14 px-5">
-        <motion.div
-          initial={{ y: 60, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3, type: "spring", stiffness: 300 }}
-          className="rounded-3xl px-6 py-5 flex items-center justify-between"
-          style={{
-            background: "rgba(15,25,50,0.72)", backdropFilter: "blur(24px)",
-            border: "1px solid rgba(255,255,255,0.08)",
-            boxShadow: "0 24px 60px rgba(0,0,0,0.5)"
-          }}>
-
-          {/* Speaker */}
-          <ControlBtn
-            icon={speakerOn ? Volume2 : Volume2}
-            label="Speaker"
-            active={speakerOn}
-            activeColor={C.teal}
-            onClick={() => setSpeakerOn(s => !s)}
-          />
-
-          {/* Video toggle */}
-          <ControlBtn
-            icon={videoOff ? VideoOff : Video}
-            label="Video"
-            active={!videoOff}
-            activeColor={C.teal}
-            onClick={() => setVideoOff(v => !v)}
-          />
-
-          {/* Mute */}
-          <ControlBtn
-            icon={muted ? MicOff : Mic}
-            label={muted ? "Unmute" : "Mute"}
-            active={muted}
-            activeColor="#F59E0B"
-            onClick={() => setMuted(m => !m)}
-          />
-
-          {/* ── End Call ── */}
-          <motion.button
-            whileTap={{ scale: 0.88 }}
-            onClick={handleEnd}
-            className="flex flex-col items-center gap-1.5"
-          >
-            <motion.div
-              animate={{ scale: [1, 1.07, 1] }}
-              transition={{ duration: 1.6, repeat: Infinity }}
-              className="w-16 h-16 rounded-full flex items-center justify-center shadow-xl"
-              style={{
-                background: "linear-gradient(135deg, #EF4444, #DC2626)",
-                boxShadow: "0 8px 24px rgba(239,68,68,0.55)"
-              }}>
-              <PhoneOff size={24} color="white" />
-            </motion.div>
-            <span className="text-white/60 text-[10px] font-bold">End</span>
-          </motion.button>
-        </motion.div>
       </div>
     </motion.div>
   );
@@ -785,11 +577,11 @@ const ControlBtn = ({ icon: Icon, label, active, activeColor, onClick }) => (
   </motion.button>
 );
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ROOT — DEMO NAVIGATION
-// ─────────────────────────────────────────────────────────────────────────────
+// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ROOT â DEMO NAVIGATION
+// âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 export default function MedShiftProfiles() {
-  const [screen, setScreen] = useState("menu"); // menu | hospital | technician | calling
+  const [screen, setScreen] = useState("hospital"); // menu | hospital | technician | calling
   const [callCallee, setCallCallee] = useState("");
 
   const openCall = (name) => {
@@ -808,83 +600,9 @@ export default function MedShiftProfiles() {
       <div className="relative overflow-hidden shadow-2xl"
         style={{ width: "100%", maxWidth: 430, minHeight: "100vh", background: C.pearl, fontFamily: "'DM Sans', sans-serif" }}>
 
-        {/* ── Menu / Landing ── */}
-        <AnimatePresence>
-          {screen === "menu" && (
-            <motion.div key="menu"
-              className="flex flex-col h-screen"
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <StatusBar />
-              <div className="flex-1 flex flex-col justify-center px-6 gap-6">
-                {/* Header */}
-                <div className="text-center mb-4">
-                  <div className="w-14 h-14 rounded-2xl mx-auto flex items-center justify-center mb-4"
-                    style={{ background: C.blue }}>
-                    <Activity size={26} color="white" strokeWidth={2.5} />
-                  </div>
-                  <h1 className="font-black text-2xl" style={{ color: C.blue }}>
-                    Med<span style={{ color: C.teal }}>Shift</span>
-                  </h1>
-                  <p className="text-slate-400 text-sm mt-1">Phase 10 & 11 · Profile + Calling Demo</p>
-                </div>
+        {/* ââ Menu / Landing ââ */}
 
-                {/* Option cards */}
-                {[
-                  {
-                    id: "hospital",
-                    title: "Hospital Manager Profile",
-                    sub: "Viewed by a Technician",
-                    icon: Briefcase, color: C.blue,
-                    badge: "Phase 10-A"
-                  },
-                  {
-                    id: "technician",
-                    title: "Technician Profile",
-                    sub: "Viewed by a Manager",
-                    icon: Award, color: C.teal,
-                    badge: "Phase 10-B"
-                  },
-                  {
-                    id: "calling-demo",
-                    title: "Mock Calling Screen",
-                    sub: "WhatsApp-style call UI",
-                    icon: Phone, color: "#25D366",
-                    badge: "Phase 11"
-                  },
-                ].map(({ id, title, sub, icon: Icon, color, badge }) => (
-                  <motion.button key={id} whileTap={{ scale: 0.97 }}
-                    onClick={() => {
-                      if (id === "calling-demo") { setCallCallee("Rahul V."); setScreen("calling"); }
-                      else setScreen(id);
-                    }}
-                    className="w-full flex items-center gap-4 p-4 rounded-2xl text-left"
-                    style={{
-                      background: C.card, border: `1.5px solid ${color}20`,
-                      boxShadow: `0 4px 20px ${color}10`
-                    }}>
-                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0"
-                      style={{ background: `${color}12` }}>
-                      <Icon size={22} color={color} />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-black text-base" style={{ color: C.blue }}>{title}</p>
-                      <p className="text-xs text-slate-400 mt-0.5">{sub}</p>
-                    </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <span className="text-[10px] font-black px-2 py-0.5 rounded-full"
-                        style={{ background: `${color}12`, color }}>
-                        {badge}
-                      </span>
-                      <ChevronRight size={16} color="#CBD5E1" />
-                    </div>
-                  </motion.button>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* ── Screens ── */}
+        {/* ââ Screens ââ */}
         <AnimatePresence>
           {screen === "hospital" && (
             <HospitalProfile key="hosp"

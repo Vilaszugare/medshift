@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "468316492013",
+    "project_id": "quick-med-support",
+    "storage_bucket": "quick-med-support.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:468316492013:android:2514d8f74f4c772b7b3ce4",
+        "android_client_info": {
+          "package_name": "com.medshift.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBf8L0S4MDpiQvqLrBTCco-mjkpBUhei98"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
