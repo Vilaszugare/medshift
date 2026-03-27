@@ -2199,14 +2199,15 @@ const GuestAboutCard = () => {
         .guest-stats-row { display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); margin-bottom: 16px; }
         .guest-stat-num { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 800; color: #fff; }
         .guest-stat-label { font-size: 7.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.45); }
-        .guest-bottom-row { display: flex; justify-content: space-between; align-items: center; }
+        .guest-bottom-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 10px; margin-top: 24px; }
         .guest-btn-read { padding: 8px 16px; border-radius: 50px; background: linear-gradient(135deg, #0d9488, #0891b2); color: #fff; font-size: 11px; font-weight: 600; text-decoration: none; border: none; }
-        .guest-founder-wrap { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.05); padding: 4px 10px 4px 4px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.08); }
-        .guest-founder-avatar { width: 28px; height: 28px; border-radius: 50%; overflow: hidden; }
+        .guest-founder-wrap { position: relative; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 28px 12px 12px; text-align: center; min-width: 140px; box-shadow: 0 4px 12px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.05); }
+        .guest-founder-avatar { position: absolute; top: -24px; left: 50%; transform: translateX(-50%); width: 48px; height: 48px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.15); box-shadow: 0 0 0 3px rgba(13,148,136,0.3), 0 4px 10px rgba(0,0,0,0.4); overflow: hidden; background: #0f2746; }
         .guest-founder-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .guest-founder-text { display: flex; flex-direction: column; gap: 1px; }
-        .guest-founder-role { font-size: 6.5px; font-weight: 700; color: #2dd4bf; text-transform: uppercase; }
-        .guest-founder-name { font-family: 'Syne', sans-serif; font-size: 10.5px; font-weight: 700; color: #fff; }
+        .guest-founder-text { display: flex; flex-direction: column; gap: 2px; }
+        .guest-founder-role { font-size: 7px; font-weight: 800; letter-spacing: 0.15em; color: #2dd4bf; text-transform: uppercase; }
+        .guest-founder-name { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700; color: #fff; }
+        .guest-founder-quals { font-size: 8.5px; color: rgba(255,255,255,0.5); }
       `}</style>
 
       {/* Outer Wrapper: Handles ONLY the entry pop-up */}
@@ -2238,12 +2239,20 @@ const GuestAboutCard = () => {
         </div>
         <div className="guest-bottom-row">
           <motion.a href="#" className="guest-btn-read" whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} animate={{ y: [0, -2, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }} style={{ willChange: "transform" }}>Read More</motion.a>
-          <motion.div className="guest-founder-wrap" initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0, y: [0, -3, 0] }} transition={{ y: { duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }, opacity: { duration: 0.5 }, x: { type: "spring", stiffness: 200, damping: 22, delay: 0.2 } }} style={{ willChange: "transform" }}>
-            <div className="guest-founder-avatar"><img src="/assets/lakhan.jpeg" alt="Dr. Lakhan Thakare" /></div>
+          <motion.div
+            className="guest-founder-wrap"
+            initial={{ opacity: 0, x: 16 }}
+            animate={{ opacity: 1, x: 0, y: [0, -3, 0] }}
+            transition={{ y: { duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }, opacity: { duration: 0.5 }, x: { type: "spring", stiffness: 200, damping: 22, delay: 0.2 } }}
+            style={{ willChange: "transform" }}
+          >
+            <div className="guest-founder-avatar">
+              <img src="/assets/lakhan.jpeg" alt="Dr. Lakhan Thakare" />
+            </div>
             <div className="guest-founder-text">
               <div className="guest-founder-role">Founder & CEO</div>
               <div className="guest-founder-name">Dr. Lakhan Thakare</div>
-              <div style={{fontSize: '8px', color: 'rgba(255,255,255,0.45)'}}>X-Ray Specialist</div>
+              <div className="guest-founder-quals">X-Ray Specialist</div>
             </div>
           </motion.div>
         </div>
