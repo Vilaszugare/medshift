@@ -6,7 +6,6 @@ from schemas import TechnicianRegisterRequest, LoginRequest, ManagerRegisterRequ
 import hashlib
 import uuid
 import bcrypt
-from fastapi import APIRouter
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
