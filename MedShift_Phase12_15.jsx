@@ -1463,14 +1463,14 @@ const TechProfile = ({ onLogout, isGuest, onRequireAuth, currentUser, onEditClic
 
   return (
   <div className="bg-transparent">
-    <div className="px-5 pt-5 pb-6 relative"
+    <div className="w-full pt-5 pb-6 relative"
       style={{ background:`linear-gradient(160deg, ${C.blue}, #0F2744)` }}>
       
       <button onClick={onEditClick} className="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white active:scale-95 transition-transform" style={{ zIndex: 10, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
         <Edit2 size={16} />
       </button>
 
-      <div className="flex flex-col items-center relative mt-4">
+      <div className="flex flex-col items-center relative mt-4 px-5">
         <div className="relative w-32 h-32 mb-3">
           <svg className="absolute inset-0 w-full h-full -rotate-90 transform" viewBox="0 0 120 120">
             <circle cx="60" cy="60" r={radius} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="6" />
@@ -2176,13 +2176,14 @@ const CreateMenuSheet = ({ open, onClose, onSelectCommunity, onSelectShift }) =>
 const GuestAboutCard = () => {
 
   return (
-    <div style={{ padding: '16px 16px 8px', fontFamily: '"DM Sans", sans-serif' }}>
+    <div style={{ padding: '0 0 8px 0', fontFamily: '"DM Sans", sans-serif' }}>
       <style>{`
         .guest-glass-card {
-          position: relative; border-radius: 20px; background: rgba(7, 25, 55, 0.94);
+          position: relative; border-radius: 0 0 24px 24px; background: rgba(7, 25, 55, 0.94);
           backdrop-filter: blur(20px) saturate(1.6); -webkit-backdrop-filter: blur(20px) saturate(1.6);
           border: 1px solid rgba(255, 255, 255, 0.13); padding: 16px;
           box-shadow: 0 10px 24px rgba(0,0,0,0.35), 0 0 0 0.5px rgba(255,255,255,0.06) inset;
+          width: 100%; box-sizing: border-box;
         }
         .guest-glass-card::before {
           content: ''; position: absolute; top: 0; left: 10%; right: 10%; height: 1px;
