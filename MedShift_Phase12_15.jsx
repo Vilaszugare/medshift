@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+
+import { motion, AnimatePresence, useAnimationControls } from "framer-motion";
 import PullToRefresh from 'react-simple-pull-to-refresh';
 import { HospitalProfile, TechnicianProfile } from './MedShift_Phase10_11.jsx';
 import CallingScreen from './components/CallingScreen.jsx';
@@ -25,10 +26,14 @@ import {
 import { Capacitor } from '@capacitor/core';
 // PRODUCTION SERVER
 // const rawUrl = import.meta.env.VITE_API_URL || "https://medshift-backend-3ktw.onrender.com";
+
+// DuckDNS Domain (Production)
+const rawUrl = import.meta.env.VITE_API_URL || "http://quickmedsupport.duckdns.org";
+
+// LOCAL DEV (Inactive)
 // const rawUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
-// DuckDNS Domain (Active)
-const rawUrl = import.meta.env.VITE_API_URL || "http://quickmedsupport.duckdns.org";
+
 let processedUrl = rawUrl.endsWith("/") ? rawUrl.slice(0, -1) : rawUrl;
 
 // If running natively on Android emulator, rewrite localhost to the loopback IP
@@ -713,76 +718,81 @@ const TechRadar = ({ shifts, onHospitalClick, isGuest, onRequireAuth, currentUse
 
   return (
     <div className="flex-1 overflow-y-auto pb-28 bg-transparent" style={{ scrollbarWidth:"none" }}>
-      {/* Greeting */}
-      <div className="px-5 pt-5 pb-4">
-        <p className="text-xs text-slate-400 mb-0.5" style={{ fontFamily:F.mono }}>
-          Wednesday, 18 Mar 2026
-        </p>
-        <h1 className="font-black text-2xl mb-1" style={{ color:C.blue, fontFamily:F.head }}>
-          Hi, {firstName} 👋
-        </h1>
-        <p className="text-sm text-slate-400">{currentUser?.location || "Loading..."} · {currentUser?.rating || "New"}★ · {currentUser?.total_shifts || 0} shifts</p>
 
-        {/* Availability toggle */}
-        <motion.button
-          whileTap={{ scale:0.97 }}
-          onClick={toggleAvailability}
-          className="w-full mt-4 rounded-2xl px-5 py-4 flex items-center justify-between"
-          style={{
-            background: isAvailable
-              ? `linear-gradient(135deg, ${C.teal}, #0F766E)`
-              : `linear-gradient(135deg, ${C.blue}, #1E4A7A)`,
-            boxShadow: isAvailable ? `0 8px 28px ${C.teal}40` : `0 8px 28px ${C.blue}28`
-          }}>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/20">
-              {isAvailable
-                ? <Radio size={20} color="white" className="animate-pulse"/>
-                : <Radio size={20} color="rgba(255,255,255,0.5)"/>}
-            </div>
-            <div className="text-left">
-              <p className="text-white font-black text-base" style={{ fontFamily:F.head }}>
-                {isAvailable ? "Available for Emergency Calls" : "Go Available"}
-              </p>
-              <p className="text-white/65 text-xs">
-                {isAvailable ? "Hospitals can see you nearby" : "Currently off-duty"}
-              </p>
-            </div>
-          </div>
-          <div className="w-12 h-6 rounded-full px-1 flex items-center transition-all"
-            style={{ background: isAvailable ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.1)" }}>
-            <motion.div className="w-4 h-4 rounded-full bg-white"
-              animate={{ x: isAvailable ? 24 : 0 }}
-              transition={{ type:"spring", stiffness:500, damping:30 }}/>
-          </div>
-        </motion.button>
+      {/* ── TOP SECTION: Guest sees About Us card; authenticated user sees greeting ── */}
+      {isGuest ? (
+        <GuestAboutCard />
+      ) : (
+        <div className="px-5 pt-5 pb-4">
+          <p className="text-xs text-slate-400 mb-0.5" style={{ fontFamily:F.mono }}>
+            Wednesday, 18 Mar 2026
+          </p>
+          <h1 className="font-black text-2xl mb-1" style={{ color:C.blue, fontFamily:F.head }}>
+            Hi, {firstName} 👋
+          </h1>
+          <p className="text-sm text-slate-400">{currentUser?.location || "Loading..."} · {currentUser?.rating || "New"}★ · {currentUser?.total_shifts || 0} shifts</p>
 
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-2.5 mt-4">
-          {[
-            { label:"Rating",      value:"4.9★",                                                  icon:Star,          color:"#F59E0B",  onClick: null },
-            { label:"Shifts",      value:"42",                                                    icon:Calendar,      color:C.teal,    onClick: null },
-            {
-              label: "Quick Inbox",
-              value: unreadTechCount > 0 ? `${unreadTechCount} New` : `${totalTechCount}`,
-              icon: MessageCircle,
-              color: unreadTechCount > 0 ? C.amber : C.teal,
-              onClick: onInboxClick,
-            },
-          ].map(({ label, value, icon:Icon, color, onClick }) => {
-            const Tag = onClick ? "button" : "div";
-            return (
-              <Tag key={label} onClick={onClick || undefined}
-                className={`rounded-2xl p-3 text-center${onClick ? " active:scale-95 transition-transform" : ""}`}
-                style={{ background:`${color}0D`, border:`1px solid ${color}22` }}>
-                <Icon size={13} color={color} className="mx-auto mb-1"/>
-                <p className="font-black text-sm" style={{ color, fontFamily:F.mono }}>{value}</p>
-                <p className="text-[10px] text-slate-400">{label}</p>
-              </Tag>
-            );
-          })}
+          {/* Availability toggle */}
+          <motion.button
+            whileTap={{ scale:0.97 }}
+            onClick={toggleAvailability}
+            className="w-full mt-4 rounded-2xl px-5 py-4 flex items-center justify-between"
+            style={{
+              background: isAvailable
+                ? `linear-gradient(135deg, ${C.teal}, #0F766E)`
+                : `linear-gradient(135deg, ${C.blue}, #1E4A7A)`,
+              boxShadow: isAvailable ? `0 8px 28px ${C.teal}40` : `0 8px 28px ${C.blue}28`
+            }}>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/20">
+                {isAvailable
+                  ? <Radio size={20} color="white" className="animate-pulse"/>
+                  : <Radio size={20} color="rgba(255,255,255,0.5)"/>}
+              </div>
+              <div className="text-left">
+                <p className="text-white font-black text-base" style={{ fontFamily:F.head }}>
+                  {isAvailable ? "Available for Emergency Calls" : "Go Available"}
+                </p>
+                <p className="text-white/65 text-xs">
+                  {isAvailable ? "Hospitals can see you nearby" : "Currently off-duty"}
+                </p>
+              </div>
+            </div>
+            <div className="w-12 h-6 rounded-full px-1 flex items-center transition-all"
+              style={{ background: isAvailable ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.1)" }}>
+              <motion.div className="w-4 h-4 rounded-full bg-white"
+                animate={{ x: isAvailable ? 24 : 0 }}
+                transition={{ type:"spring", stiffness:500, damping:30 }}/>
+            </div>
+          </motion.button>
+
+          {/* Stats */}
+          <div className="grid grid-cols-3 gap-2.5 mt-4">
+            {[
+              { label:"Rating",      value:"4.9★",                                                  icon:Star,          color:"#F59E0B",  onClick: null },
+              { label:"Shifts",      value:"42",                                                    icon:Calendar,      color:C.teal,    onClick: null },
+              {
+                label: "Quick Inbox",
+                value: unreadTechCount > 0 ? `${unreadTechCount} New` : `${totalTechCount}`,
+                icon: MessageCircle,
+                color: unreadTechCount > 0 ? C.amber : C.teal,
+                onClick: onInboxClick,
+              },
+            ].map(({ label, value, icon:Icon, color, onClick }) => {
+              const Tag = onClick ? "button" : "div";
+              return (
+                <Tag key={label} onClick={onClick || undefined}
+                  className={`rounded-2xl p-3 text-center${onClick ? " active:scale-95 transition-transform" : ""}`}
+                  style={{ background:`${color}0D`, border:`1px solid ${color}22` }}>
+                  <Icon size={13} color={color} className="mx-auto mb-1"/>
+                  <p className="font-black text-sm" style={{ color, fontFamily:F.mono }}>{value}</p>
+                  <p className="text-[10px] text-slate-400">{label}</p>
+                </Tag>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Shift Cards */}
       <div className="px-5">
@@ -2180,6 +2190,86 @@ const CreateMenuSheet = ({ open, onClose, onSelectCommunity, onSelectShift }) =>
 
 // ROOT APP
 // ═══════════════════════════════════════════════════════════════════════════════
+const GuestAboutCard = () => {
+
+  return (
+    <div style={{ padding: '16px 16px 8px', fontFamily: '"DM Sans", sans-serif' }}>
+      <style>{`
+        .guest-glass-card {
+          position: relative; border-radius: 20px; background: rgba(7, 25, 55, 0.94);
+          backdrop-filter: blur(20px) saturate(1.6); -webkit-backdrop-filter: blur(20px) saturate(1.6);
+          border: 1px solid rgba(255, 255, 255, 0.13); padding: 16px;
+          box-shadow: 0 10px 24px rgba(0,0,0,0.35), 0 0 0 0.5px rgba(255,255,255,0.06) inset;
+        }
+        .guest-glass-card::before {
+          content: ''; position: absolute; top: 0; left: 10%; right: 10%; height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.32), transparent);
+        }
+        .guest-badge { display: flex; align-items: center; gap: 6px; font-family: 'Syne', sans-serif; font-size: 8.5px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: #5eead4; margin-bottom: 10px; }
+        .guest-badge-dot { width: 4px; height: 4px; border-radius: 50%; background: #0d9488; box-shadow: 0 0 6px 2px #0d9488; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .guest-logo-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+        .guest-logo-icon { width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(135deg, #0d9488, #0891b2); display: flex; align-items: center; justify-content: center; }
+        .guest-logo-name { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 800; color: #fff; }
+        .guest-logo-name span { color: #2dd4bf; }
+        .guest-body-text { font-size: 11.5px; line-height: 1.45; color: rgba(255,255,255,0.85); margin-bottom: 12px; font-weight: 300; }
+        .guest-stats-row { display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); margin-bottom: 16px; }
+        .guest-stat-num { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 800; color: #fff; }
+        .guest-stat-label { font-size: 7.5px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.45); }
+        .guest-bottom-row { display: flex; justify-content: space-between; align-items: center; }
+        .guest-btn-read { padding: 8px 16px; border-radius: 50px; background: linear-gradient(135deg, #0d9488, #0891b2); color: #fff; font-size: 11px; font-weight: 600; text-decoration: none; border: none; }
+        .guest-founder-wrap { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.05); padding: 4px 10px 4px 4px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.08); }
+        .guest-founder-avatar { width: 28px; height: 28px; border-radius: 50%; overflow: hidden; }
+        .guest-founder-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .guest-founder-text { display: flex; flex-direction: column; gap: 1px; }
+        .guest-founder-role { font-size: 6.5px; font-weight: 700; color: #2dd4bf; text-transform: uppercase; }
+        .guest-founder-name { font-family: 'Syne', sans-serif; font-size: 10.5px; font-weight: 700; color: #fff; }
+      `}</style>
+
+      {/* Outer Wrapper: Handles ONLY the entry pop-up */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: "spring", stiffness: 260, damping: 20 }}
+        style={{ willChange: "transform, opacity" }} // Hardware acceleration
+      >
+        {/* Inner Wrapper: Handles ONLY the infinite float */}
+        <motion.div
+          className="guest-glass-card"
+          animate={{ y: [0, -4, 0] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
+          style={{ willChange: "transform" }} // Hardware acceleration for the heavy blur
+        >
+        <div className="guest-badge"><span className="guest-badge-dot" />About Us</div>
+        <div className="guest-logo-row">
+          <div className="guest-logo-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          </div>
+          <div className="guest-logo-name">Quick<span>Med</span> Support</div>
+        </div>
+        <p className="guest-body-text"><strong>Quick Med Support</strong> is an on-demand, real-time staffing platform designed exclusively for healthcare facilities. It solves the <strong>critical problem of sudden staffing shortages</strong> by instantly bridging the gap between hospitals and qualified healthcare professionals.</p>
+        <div className="guest-stats-row">
+          <div><div className="guest-stat-num">2.4<span style={{color:'#2dd4bf'}}>K+</span></div><div className="guest-stat-label">Professionals</div></div>
+          <div><div className="guest-stat-num">98<span style={{color:'#2dd4bf'}}>%</span></div><div className="guest-stat-label">Match Rate</div></div>
+          <div><div className="guest-stat-num">&lt;15<span style={{color:'#2dd4bf'}}>m</span></div><div className="guest-stat-label">Avg. Fill Time</div></div>
+        </div>
+        <div className="guest-bottom-row">
+          <motion.a href="#" className="guest-btn-read" whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }} animate={{ y: [0, -2, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 1 }} style={{ willChange: "transform" }}>Read More</motion.a>
+          <motion.div className="guest-founder-wrap" initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0, y: [0, -3, 0] }} transition={{ y: { duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }, opacity: { duration: 0.5 }, x: { type: "spring", stiffness: 200, damping: 22, delay: 0.2 } }} style={{ willChange: "transform" }}>
+            <div className="guest-founder-avatar"><img src="/assets/lakhan.jpeg" alt="Dr. Lakhan Thakare" /></div>
+            <div className="guest-founder-text">
+              <div className="guest-founder-role">Founder & CEO</div>
+              <div className="guest-founder-name">Dr. Lakhan Thakare</div>
+              <div style={{fontSize: '8px', color: 'rgba(255,255,255,0.45)'}}>X-Ray Specialist</div>
+            </div>
+          </motion.div>
+        </div>
+        </motion.div>
+      </motion.div>
+    </div>
+  );
+};
+
 export default function MedShiftFull() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAvailable, setIsAvailable] = useState(false);
@@ -2505,6 +2595,9 @@ export default function MedShiftFull() {
     };
     fetchHistory();
 
+    const handleInAppNotif = () => fetchHistory();
+    window.addEventListener('medshift-notification-received', handleInAppNotif);
+
     // Step B: WebSocket
     let socket;
     let reconnectTimeout;
@@ -2512,6 +2605,7 @@ export default function MedShiftFull() {
 
     const connectWS = () => {
       if (destroyed) return; // don't reconnect if component unmounted
+
       const wsProtocol = API_BASE.startsWith("https") ? "wss:" : "ws:";
       // Support both local and prod URL logic
       const host = API_BASE.replace(/^https?:\/\//, "");
@@ -2554,7 +2648,9 @@ export default function MedShiftFull() {
       destroyed = true; // stop reconnect loop on unmount
       if (socket) socket.close();
       if (reconnectTimeout) clearTimeout(reconnectTimeout);
+      window.removeEventListener('medshift-notification-received', handleInAppNotif);
     };
+
   }, [isAuthenticated, currentUser?.id]);
   const [createMenuOpen, setCreateMenuOpen] = useState(false);
   const [createPostOpen, setCreatePostOpen] = useState(false);
