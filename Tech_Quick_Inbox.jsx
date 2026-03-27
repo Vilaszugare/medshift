@@ -92,7 +92,6 @@ const ChatView = ({ msg, replies, apiBase, techId, onBack }) => {
   useEffect(() => {
     if (!msg || !techId) return;
     setThreadLoading(true);
-    // Thread endpoint: /api/messages/thread/{shift_id}/{manager_id}/{technician_id}
     fetch(`${apiBase}/api/messages/thread/${msg.shift_id}/${msg.manager_id}/${techId}`)
       .then((r) => r.json())
       .then((data) => setThread(Array.isArray(data) ? data : []))
@@ -100,15 +99,91 @@ const ChatView = ({ msg, replies, apiBase, techId, onBack }) => {
       .finally(() => setThreadLoading(false));
   }, [msg.id]);
 
+  // ── Dedicated per-thread WebSocket (Live Chat) ────────────────────────────
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (!techId || !msg?.shift_id) return;
+
+    const wsProtocol = apiBase.startsWith('https') ? 'wss:' : 'ws:';
+    const host = apiBase.replace(/^https?:\/\//, '');
+    const wsUrl = `${wsProtocol}//${host}/ws/notifications/${techId}`;
+
+    let socket;
+    let destroyed = false;
+    let reconnectTimer;
+
+    const connect = () => {
+      if (destroyed) return;
+      socket = new WebSocket(wsUrl);
+
+      socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          // For technician: incoming messages have receiver_id === techId
+          if (data.type === 'new_message' && data.message) {
+            const newMsg = data.message;
+            if (
+              String(newMsg.shift_id) === String(msg.shift_id) &&
+              String(newMsg.receiver_id) === String(techId)
+            ) {
+              // Functional state update — never overwrites existing messages
+              setThread((prev) => {
+                if (prev.some((m) => String(m.id) === String(newMsg.id))) return prev;
+                return [...prev, newMsg];
+              });
+            }
+          }
+        } catch (e) {
+          // swallow bad frames
+        }
+      };
+
+      socket.onclose = () => {
+        if (!destroyed) reconnectTimer = setTimeout(connect, 3000);
+      };
+
+      socket.onerror = () => socket.close();
+    };
+
+    connect();
+    return () => {
+      destroyed = true;
+      clearTimeout(reconnectTimer);
+      socket?.close();
+    };
+  }, [techId, msg?.shift_id, apiBase]);
+
+  // Also catch events fired by App.jsx's push-notification listener
+  useEffect(() => {
+    const handleLiveMessage = (e) => {
+      const payload = e.detail?.payload;
+      if (payload?.type === 'new_message') {
+        const newMsg = payload.message;
+        if (
+          newMsg &&
+          String(newMsg.shift_id) === String(msg.shift_id) &&
+          String(newMsg.receiver_id) === String(techId)
+        ) {
+          setThread((prev) => {
+            if (prev.some((m) => String(m.id) === String(newMsg.id))) return prev;
+            return [...prev, newMsg];
+          });
+        }
+      }
+    };
+    window.addEventListener('medshift-notification-received', handleLiveMessage);
+    return () => window.removeEventListener('medshift-notification-received', handleLiveMessage);
+  }, [msg.shift_id, techId]);
+
+  // Auto-scroll to bottom whenever thread updates
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [thread]);
 
   const handleSend = async (reply) => {
     if (sending) return;
     setSending(true);
 
-    // Optimistic bubble
+    // Optimistic bubble with functional updater
     const optimistic = {
       id: `opt-${Date.now()}`,
       shift_id: msg.shift_id,
@@ -122,8 +197,8 @@ const ChatView = ({ msg, replies, apiBase, techId, onBack }) => {
 
     try {
       await fetch(`${apiBase}/api/messages/reply`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sender_id: techId,
           receiver_id: msg.manager_id,
@@ -138,7 +213,10 @@ const ChatView = ({ msg, replies, apiBase, techId, onBack }) => {
     }
   };
 
+
+
   return (
+
     <div className="flex flex-col h-full">
       {/* Scrollable chat area */}
       <div className="flex-1 overflow-y-auto px-4 pt-3" style={{ scrollbarWidth: "none" }}>
@@ -229,7 +307,23 @@ const TechQuickInboxModal = ({ open, onClose, techId, apiBase }) => {
       .finally(() => setLoading(false));
   }, [open, techId]);
 
+  // Live Refresh for Inbox List
+  useEffect(() => {
+    const refreshInbox = (e) => {
+      if (open && techId) {
+        fetch(`${apiBase}/api/messages/technician/${techId}`)
+          .then((r) => r.json())
+          .then((msgs) => setMessages(Array.isArray(msgs) ? msgs : []))
+          .catch(() => {});
+      }
+    };
+
+    window.addEventListener('medshift-notification-received', refreshInbox);
+    return () => window.removeEventListener('medshift-notification-received', refreshInbox);
+  }, [open, techId]);
+
   const unreadCount = messages.filter((m) => !m.is_read).length;
+
 
   const markAsRead = (msgId) =>
     setMessages((prev) => prev.map((m) => (m.id === msgId ? { ...m, is_read: true } : m)));
@@ -245,17 +339,18 @@ const TechQuickInboxModal = ({ open, onClose, techId, apiBase }) => {
   return (
     <AnimatePresence>
       {open && (
-        <>
-          {/* Scrim */}
-          <motion.div
-            className="absolute inset-0 z-[80] bg-black/35"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            onClick={onClose}
-          />
+        <motion.div
+          key="t-inbox-scrim"
+          className="absolute inset-0 z-[80] bg-black/35"
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          onClick={onClose}
+        />
+      )}
 
-          {/* Sheet */}
-          <motion.div
-            className="absolute bottom-0 left-0 right-0 z-[90] flex flex-col rounded-t-3xl overflow-hidden shadow-2xl"
+      {open && (
+        <motion.div
+          key="t-inbox-sheet"
+          className="absolute bottom-0 left-0 right-0 z-[90] flex flex-col rounded-t-3xl overflow-hidden shadow-2xl"
             style={{ background: "var(--c-pearl)", height: "82vh" }}
             initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}
             transition={{ type: "spring", stiffness: 340, damping: 38 }}
@@ -339,7 +434,6 @@ const TechQuickInboxModal = ({ open, onClose, techId, apiBase }) => {
           />
 
           </motion.div>
-        </>
       )}
     </AnimatePresence>
   );

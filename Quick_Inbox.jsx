@@ -105,16 +105,85 @@ const ChatView = ({ msg, replies, apiBase, managerId, onBack }) => {
       .finally(() => setThreadLoading(false));
   }, [msg.id]);
 
-  // Auto-scroll to bottom when thread changes
+  // ── Dedicated per-thread WebSocket (Live Chat) ────────────────────────────
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (!managerId || !msg?.shift_id) return;
+
+    const wsProtocol = apiBase.startsWith('https') ? 'wss:' : 'ws:';
+    const host = apiBase.replace(/^https?:\/\//, '');
+    const wsUrl = `${wsProtocol}//${host}/ws/notifications/${managerId}`;
+
+    let socket;
+    let destroyed = false;
+    let reconnectTimer;
+
+    const connect = () => {
+      if (destroyed) return;
+      socket = new WebSocket(wsUrl);
+
+      socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          // Only handle new_message events for THIS thread
+          if (data.type === 'new_message' && data.message) {
+            const newMsg = data.message;
+            if (String(newMsg.shift_id) === String(msg.shift_id)) {
+              // Functional state update — never overwrites existing messages
+              setThread((prev) => {
+                if (prev.some((m) => String(m.id) === String(newMsg.id))) return prev;
+                return [...prev, newMsg];
+              });
+            }
+          }
+        } catch (e) {
+          // swallow bad frames
+        }
+      };
+
+      socket.onclose = () => {
+        // Auto-reconnect every 3s unless unmounted
+        if (!destroyed) reconnectTimer = setTimeout(connect, 3000);
+      };
+
+      socket.onerror = () => socket.close();
+    };
+
+    connect();
+    return () => {
+      destroyed = true;
+      clearTimeout(reconnectTimer);
+      socket?.close();
+    };
+  }, [managerId, msg?.shift_id, apiBase]);
+
+  // Also catch events fired by App.jsx's push-notification listener
+  useEffect(() => {
+    const handleLiveMessage = (e) => {
+      const payload = e.detail?.payload;
+      if (payload?.type === 'new_message') {
+        const newMsg = payload.message;
+        if (newMsg && String(newMsg.shift_id) === String(msg.shift_id)) {
+          setThread((prev) => {
+            if (prev.some((m) => String(m.id) === String(newMsg.id))) return prev;
+            return [...prev, newMsg];
+          });
+        }
+      }
+    };
+    window.addEventListener('medshift-notification-received', handleLiveMessage);
+    return () => window.removeEventListener('medshift-notification-received', handleLiveMessage);
+  }, [msg.shift_id]);
+
+  // Auto-scroll to bottom whenever thread updates
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [thread]);
 
   const handleSend = async (reply) => {
     if (sending) return;
     setSending(true);
 
-    // Optimistic append
+    // Optimistic append with functional updater
     const optimistic = {
       id: `optimistic-${Date.now()}`,
       shift_id: msg.shift_id,
@@ -128,8 +197,8 @@ const ChatView = ({ msg, replies, apiBase, managerId, onBack }) => {
 
     try {
       await fetch(`${apiBase}/api/messages/reply`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sender_id: managerId,
           receiver_id: msg.sender_id,
@@ -138,13 +207,16 @@ const ChatView = ({ msg, replies, apiBase, managerId, onBack }) => {
         }),
       });
     } catch {
-      // Silently keep the optimistic bubble on network error
+      // Keep optimistic bubble on network error
     } finally {
       setSending(false);
     }
   };
 
+
+
   return (
+
     <div className="flex flex-col h-full">
 
       {/* ── Scrollable chat area ─────────────────────────────────── */}
@@ -220,34 +292,106 @@ const ChatView = ({ msg, replies, apiBase, managerId, onBack }) => {
   );
 };
 
+// ─── In-module cache (survives re-renders, resets on page refresh) ────────────
+let _managerInboxCache = null; // { managerId, messages, replies }
+
 // ─── Main Modal ───────────────────────────────────────────────────────────────
 const QuickInboxModal = ({ open, onClose, managerId, apiBase }) => {
-  const [messages, setMessages] = useState([]);
-  const [replies, setReplies] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [messages, setMessages] = useState(() =>
+    (_managerInboxCache !== null && managerId && _managerInboxCache.managerId === managerId) ? _managerInboxCache.messages : []
+  );
+  const [replies, setReplies] = useState(() =>
+    (_managerInboxCache !== null && managerId && _managerInboxCache.managerId === managerId) ? _managerInboxCache.replies : []
+  );
+  const [loading, setLoading] = useState(
+    // Show spinner only if cache is empty
+    !(_managerInboxCache !== null && managerId && _managerInboxCache.managerId === managerId && _managerInboxCache.messages.length > 0)
+  );
   const [selectedMsg, setSelectedMsg] = useState(null);
   const [isCalling, setIsCalling] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
 
-  // Fetch messages + suggested replies whenever the modal opens
-  useEffect(() => {
-    if (!open || !managerId) return;
-    setLoading(true);
-    setSelectedMsg(null);
+  // ── Fetch inbox (uses cache — shows instantly, refreshes in background) ────
+  const fetchInbox = (showSpinner = false) => {
+    if (!managerId) return;
+    if (showSpinner) setLoading(true);
 
     Promise.all([
       fetch(`${apiBase}/api/messages/manager/${managerId}`).then((r) => r.json()),
-      fetch(`${apiBase}/api/messages/suggested-replies/manager`).then((r) => r.json()),
+      replies.length === 0
+        ? fetch(`${apiBase}/api/messages/suggested-replies/manager`).then((r) => r.json())
+        : Promise.resolve(replies),
     ])
       .then(([msgs, sugg]) => {
-        setMessages(Array.isArray(msgs) ? msgs : []);
-        setReplies(Array.isArray(sugg) ? sugg : []);
+        const m = Array.isArray(msgs) ? msgs : [];
+        const s = Array.isArray(sugg) ? sugg : [];
+        setMessages(m);
+        setReplies(s);
+        // Update module-level cache
+        _managerInboxCache = { managerId, messages: m, replies: s };
       })
-      .catch(() => {
-        setMessages([]);
-        setReplies([]);
-      })
+      .catch(() => {})
       .finally(() => setLoading(false));
+  };
+
+  // Fetch on open (show spinner only on first open with empty cache)
+  useEffect(() => {
+    if (!open || !managerId) return;
+    setSelectedMsg(null);
+    fetchInbox(messages.length === 0);
+  }, [open, managerId]);
+
+  // ── Real-time: targeted state update (no re-fetch needed) ─────────────────
+  useEffect(() => {
+    const handleRealtime = (e) => {
+      const payload = e.detail?.payload;
+      if (!payload) return;
+
+      if (payload.type === 'new_message' && payload.message) {
+        const incoming = payload.message;
+
+        setMessages((prev) => {
+          // Check if this shift_id already has a thread in the list
+          const existingIdx = prev.findIndex(
+            (m) => String(m.shift_id) === String(incoming.shift_id)
+          );
+
+          if (existingIdx !== -1) {
+            // Update the existing thread: new preview + unread + move to top
+            const updated = {
+              ...prev[existingIdx],
+              content: incoming.content,
+              is_read: false,
+              created_at: incoming.created_at,
+            };
+            const rest = prev.filter((_, i) => i !== existingIdx);
+            return [updated, ...rest];
+          } else {
+            // Brand-new thread — add to top with whatever data the WS gave us
+            const newThread = {
+              id: incoming.id,
+              shift_id: incoming.shift_id,
+              shift_title: incoming.shift_title || 'New Shift',
+              sender_id: incoming.sender_id,
+              sender_name: incoming.sender_name || 'Technician',
+              receiver_id: incoming.receiver_id,
+              content: incoming.content,
+              is_read: false,
+              created_at: incoming.created_at,
+            };
+            return [newThread, ...prev];
+          }
+        });
+      }
+
+      // For notifications (not new_message), do a silent background refresh
+      if (payload.type === 'notification' && open && managerId) {
+        fetchInbox(false);
+      }
+    };
+
+    window.addEventListener('medshift-notification-received', handleRealtime);
+    return () => window.removeEventListener('medshift-notification-received', handleRealtime);
   }, [open, managerId]);
 
   const unreadCount = messages.filter((m) => !m.is_read).length;
@@ -259,36 +403,47 @@ const QuickInboxModal = ({ open, onClose, managerId, apiBase }) => {
   };
 
   const openMessage = (msg) => {
-    // Optimistic read in list
     markAsRead(msg.id);
-    // Persist to backend
     if (!msg.is_read) {
-      fetch(`${apiBase}/api/messages/${msg.id}/read`, { method: "PUT" }).catch(() => {});
+      fetch(`${apiBase}/api/messages/${msg.id}/read`, { method: 'PUT' }).catch(() => {});
     }
     setSelectedMsg(msg);
+  };
+
+  // Optimistic send — updates inbox preview immediately when manager sends
+  const handleOptimisticSend = (content) => {
+    if (!selectedMsg) return;
+    setMessages((prev) => {
+      const existingIdx = prev.findIndex((m) => m.id === selectedMsg.id);
+      if (existingIdx === -1) return prev;
+      const updated = { ...prev[existingIdx], content, created_at: new Date().toISOString() };
+      const rest = prev.filter((_, i) => i !== existingIdx);
+      return [updated, ...rest];
+    });
   };
 
   return (
     <AnimatePresence>
       {open && (
-        <>
-          {/* Scrim */}
-          <motion.div
-            className="absolute inset-0 z-[80] bg-black/35"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-          />
+        <motion.div
+          key="q-inbox-scrim"
+          className="absolute inset-0 z-[80] bg-black/35"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
+        />
+      )}
 
-          {/* Sheet */}
-          <motion.div
-            className="absolute bottom-0 left-0 right-0 z-[90] flex flex-col rounded-t-3xl overflow-hidden shadow-2xl"
-            style={{ background: "var(--c-pearl)", height: "82vh" }}
-            initial={{ y: "100%" }}
+      {open && (
+        <motion.div
+          key="q-inbox-sheet"
+          className="absolute bottom-0 left-0 right-0 z-[90] flex flex-col rounded-t-3xl overflow-hidden shadow-2xl"
+            style={{ background: 'var(--c-pearl)', height: '82vh' }}
+            initial={{ y: '100%' }}
             animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", stiffness: 340, damping: 38 }}
+            exit={{ y: '100%' }}
+            transition={{ type: 'spring', stiffness: 340, damping: 38 }}
           >
             {/* Drag handle */}
             <div className="w-10 h-1 rounded-full bg-slate-200 mx-auto mt-3 mb-1 flex-shrink-0" />
@@ -306,8 +461,14 @@ const QuickInboxModal = ({ open, onClose, managerId, apiBase }) => {
               unreadCount={unreadCount}
               C={C}
               F={F}
-              title={selectedMsg ? selectedMsg.sender_name : "Quick Inbox"}
-              subtitle={selectedMsg ? selectedMsg.shift_title : (unreadCount > 0 ? `${unreadCount} unread` : null)}
+              title={selectedMsg ? selectedMsg.sender_name : 'Quick Inbox'}
+              subtitle={
+                selectedMsg
+                  ? selectedMsg.shift_title
+                  : unreadCount > 0
+                  ? `${unreadCount} unread`
+                  : null
+              }
             />
 
             {/* Body */}
@@ -316,7 +477,7 @@ const QuickInboxModal = ({ open, onClose, managerId, apiBase }) => {
                 <div className="flex items-center justify-center h-full">
                   <motion.div
                     animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                     className="w-8 h-8 rounded-full border-2 border-t-transparent"
                     style={{ borderColor: `${C.teal}40`, borderTopColor: C.teal }}
                   />
@@ -328,6 +489,7 @@ const QuickInboxModal = ({ open, onClose, managerId, apiBase }) => {
                   apiBase={apiBase}
                   managerId={managerId}
                   onBack={() => setSelectedMsg(null)}
+                  onSend={handleOptimisticSend}
                 />
               ) : messages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full gap-3 px-8 text-center">
@@ -347,44 +509,40 @@ const QuickInboxModal = ({ open, onClose, managerId, apiBase }) => {
               ) : (
                 <div
                   className="overflow-y-auto px-4 pt-3 pb-6 h-full"
-                  style={{ scrollbarWidth: "none" }}
+                  style={{ scrollbarWidth: 'none' }}
                 >
                   {messages.map((m) => (
-                    <MessageItem
-                      key={m.id}
-                      msg={m}
-                      onSelect={openMessage}
-                    />
+                    <MessageItem key={m.id} msg={m} onSelect={openMessage} />
                   ))}
                 </div>
               )}
             </div>
-          {/* ── Calling Screen Overlay ── */}
-          <AnimatePresence>
-            {isCalling && (
-              <CallingScreen
-                callee={selectedMsg?.sender_name || "Unknown"}
-                onEnd={() => setIsCalling(false)}
-              />
-            )}
-          </AnimatePresence>
 
-          {/* ── Profile Overlay ── */}
-          <ProfileOverlay
-            show={showProfile}
-            role="manager"
-            onBack={() => setShowProfile(false)}
-            onCall={() => {
-              setShowProfile(false);
-              setIsCalling(true);
-            }}
-          />
+            {/* ── Calling Screen Overlay ── */}
+            <AnimatePresence>
+              {isCalling && (
+                <CallingScreen
+                  callee={selectedMsg?.sender_name || 'Unknown'}
+                  onEnd={() => setIsCalling(false)}
+                />
+              )}
+            </AnimatePresence>
 
+            {/* ── Profile Overlay ── */}
+            <ProfileOverlay
+              show={showProfile}
+              role="manager"
+              onBack={() => setShowProfile(false)}
+              onCall={() => {
+                setShowProfile(false);
+                setIsCalling(true);
+              }}
+            />
           </motion.div>
-        </>
       )}
     </AnimatePresence>
   );
 };
 
 export default QuickInboxModal;
+
