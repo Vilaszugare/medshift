@@ -7,6 +7,7 @@ import { C, F } from "./MedShift_Phase12_15.jsx";
 import CallingScreen from "./components/CallingScreen.jsx";
 import ChatHeader from "./components/ChatHeader.jsx";
 import ProfileOverlay from "./components/ProfileOverlay.jsx";
+import { getWsUrl } from "./config.js";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function timeAgo(iso) {
@@ -103,9 +104,7 @@ const ChatView = ({ msg, replies, apiBase, techId, onBack }) => {
   useEffect(() => {
     if (!techId || !msg?.shift_id) return;
 
-    const wsProtocol = apiBase.startsWith('https') ? 'wss:' : 'ws:';
-    const host = apiBase.replace(/^https?:\/\//, '');
-    const wsUrl = `${wsProtocol}//${host}/ws/notifications/${techId}`;
+    const wsUrl = getWsUrl(`/ws/notifications/${techId}`);
 
     let socket;
     let destroyed = false;

@@ -18,18 +18,7 @@ const F = {
   head: "system-ui, -apple-system, sans-serif",
   body: "system-ui, -apple-system, sans-serif",
 };
-// DuckDNS Domain (Production)
-let rawUrl = import.meta.env.VITE_API_URL || "http://quickmedsupport.duckdns.org";
-
-// LOCAL DEV (Inactive)
-// let rawUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
-
-
-if (rawUrl.endsWith("/")) rawUrl = rawUrl.slice(0, -1);
-if (Capacitor.isNativePlatform() && rawUrl.includes("localhost")) {
-  rawUrl = rawUrl.replace("localhost", "10.0.2.2");
-}
-const API_BASE = rawUrl;
+import { API_BASE, WS_BASE, getWsUrl } from './config.js';
 
 export default function ManagerLoginScreen({ onSuccess }) {
   const [email, setEmail] = useState("");

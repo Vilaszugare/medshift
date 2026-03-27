@@ -24,24 +24,7 @@ import {
   Moon, Sun, LogOut, Edit2, Trash2
 } from "lucide-react";
 import { Capacitor } from '@capacitor/core';
-// PRODUCTION SERVER
-// const rawUrl = import.meta.env.VITE_API_URL || "https://medshift-backend-3ktw.onrender.com";
-
-// DuckDNS Domain (Production)
-const rawUrl = import.meta.env.VITE_API_URL || "http://quickmedsupport.duckdns.org";
-
-// LOCAL DEV (Inactive)
-// const rawUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
-
-
-let processedUrl = rawUrl.endsWith("/") ? rawUrl.slice(0, -1) : rawUrl;
-
-// If running natively on Android emulator, rewrite localhost to the loopback IP
-if (Capacitor.isNativePlatform() && processedUrl.includes("localhost")) {
-  processedUrl = processedUrl.replace("localhost", "10.0.2.2");
-}
-
-const API_BASE = processedUrl;
+import { API_BASE, WS_BASE, getWsUrl } from './config.js';
 
 // ─── PALETTE ─────────────────────────────────────────────────────────────────
 export const C = {

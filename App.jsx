@@ -10,9 +10,7 @@ import Phase16 from './MedShift_Phase16.jsx';
 import MedShift from './MedShift.jsx';
 import InAppToast from './components/InAppToast.jsx';
 
-// Read the API base from env (mirrors the logic in Phase12_15)
-const rawApiBase = import.meta.env.VITE_API_URL || 'http://quickmedsupport.duckdns.org';
-const API_BASE = rawApiBase.endsWith('/') ? rawApiBase.slice(0, -1) : rawApiBase;
+import { API_BASE, WS_BASE, getWsUrl } from './config.js';
 
 export default function App() {
   const [currentRoute, setCurrentRoute] = useState(window.location.hash || '#phase12-15');
@@ -35,9 +33,7 @@ export default function App() {
         return;
       }
 
-      const wsProtocol = API_BASE.startsWith('https') ? 'wss:' : 'ws:';
-      const host = API_BASE.replace(/^https?:\/\//, '');
-      const wsUrl = `${wsProtocol}//${host}/ws/notifications/${user.id}`;
+      const wsUrl = getWsUrl(`/ws/notifications/${user.id}`);
 
       const socket = new WebSocket(wsUrl);
       globalWsRef.current = socket;
