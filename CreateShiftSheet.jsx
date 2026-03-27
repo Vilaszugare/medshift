@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronDown, Zap } from "lucide-react";
-import { C, F } from "./MedShift_Phase12_15";
+import { C, F } from "./MedShift_Phase12_15.jsx";
 
 const ROLE_OPTIONS = [
   "",

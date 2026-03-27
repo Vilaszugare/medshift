@@ -1,0 +1,28 @@
+ M App.jsx
+ M MedShift_Phase12_15.jsx
+ M MedShift_Phase16.jsx
+ M Quick_Inbox.jsx
+ M Tech_Quick_Inbox.jsx
+ M android/app/google-services.json
+ M capacitor.config.json
+ M medshift-backend/__pycache__/schemas.cpython-310.pyc
+ M medshift-backend/__pycache__/websocket_manager.cpython-310.pyc
+ M medshift-backend/routers/__pycache__/auth.cpython-310.pyc
+ M medshift-backend/routers/__pycache__/messages.cpython-310.pyc
+ M medshift-backend/routers/auth.py
+ M medshift-backend/routers/messages.py
+ M medshift-backend/schemas.py
+ M medshift-backend/websocket_manager.py
+ M vite.config.js
+?? .vscode/
+?? build_output.txt
+?? components/InAppToast.jsx
+?? git_status.txt
+?? hs_err_pid21048.log
+?? hs_err_pid21108.log
+?? lakhan.jpeg
+?? public/
+?? replay_pid21108.log
+?? vite.config.js.timestamp-1774437959655-ef18127109e1e.mjs
+?? vite.config.js.timestamp-1774526119126-944b4724b5179.mjs
+?? vite.config.js.timestamp-1774549620446-fc26002656cd5.mjs

@@ -5,10 +5,18 @@
   "plugins": {
     "CapacitorHttp": {
       "enabled": true
+    },
+    "PushNotifications": {
+      "presentationOptions": [
+        "badge",
+        "sound",
+        "alert"
+      ]
     }
   },
   "server": {
     "androidScheme": "http",
+    "cleartext": true,
     "allowNavigation": [
       "quickmedsupport.duckdns.org"
     ]

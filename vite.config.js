@@ -10,8 +10,7 @@ export default defineConfig(({ command }) => ({
   build: { outDir: "dist" },
   server: {
     host: true,
-    port: 5173,
-    allowedHosts: ['https://medmis.vercel.app/', 'lics-fry.loca.lt']
+    allowedHosts: ['medmis.vercel.app', 'lics-fry.loca.lt']
   },
   plugins: [
     react(),

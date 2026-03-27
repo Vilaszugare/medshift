@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Image as ImageIcon } from "lucide-react";
-import { C, F } from "./MedShift_Phase12_15";
+import { C, F } from "./MedShift_Phase12_15.jsx";
 
 const CreatePostSheet = ({ open, onClose, onSubmit, currentUser }) => {
   const [text, setText] = useState("");
